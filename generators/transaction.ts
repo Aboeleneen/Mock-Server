@@ -118,7 +118,7 @@ export const generateTransactionResponse = (request: TransactionRequest) => {
             return a.transactionDateTime.getTime() - b.transactionDateTime.getTime();
         } else {
             return b.transactionDateTime.getTime() - a.transactionDateTime.getTime();
-        }
+        }   
     })
 
     const transactionsInThePage = transactions.slice(0, request.pageSize);

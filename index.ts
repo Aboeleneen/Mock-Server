@@ -6,21 +6,21 @@ const app: Application = express();
 const port = process.env.PORT || 8000;
 
 app.get('/transactions', (req: Request, res: Response) => {
-    const { pageNumber, pageSize, keyword, searchIn, sort, showTestTranasctions, filters } = req.query;
+    // const { pageNumber, pageSize, keyword, searchIn, sort, showTestTranasctions, filters } = req.body;
 
-    const parsedFilters = JSON.parse(filters as string || "{}");
+    // const parsedFilters = JSON.parse(filters as string || "{}");
 
-    const request: TransactionRequest = {
-        pageNumber: Number(pageNumber),
-        pageSize: Number(pageSize),
-        keyword: keyword as string || "",
-        searchIn: searchIn as string[] || [],
-        sort: sort as any || 'ASC',
-        showTestTranasctions: showTestTranasctions === 'true',
-        filters: parsedFilters,
-    };
+    // const request: TransactionRequest = {
+    //     pageNumber: Number(pageNumber),
+    //     pageSize: Number(pageSize),
+    //     keyword: keyword as string || "",
+    //     searchIn: searchIn as string[] || [],
+    //     sort: sort as any || 'ASC',
+    //     showTestTranasctions: showTestTranasctions === 'true',
+    //     filters: parsedFilters,
+    // };
 
-    res.json(generateTransactionResponse(request))
+    res.json(generateTransactionResponse(req.body))
 });
 
 app.listen(port, () => {
