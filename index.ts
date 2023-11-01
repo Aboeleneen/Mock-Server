@@ -3,6 +3,7 @@ import { TransactionRequest, generateTransactionResponse } from './generators/tr
 
 
 const app: Application = express();
+app.use(express.json())
 const port = process.env.PORT || 8000;
 
 app.post('/transactions', (req: Request, res: Response) => {
@@ -20,7 +21,7 @@ app.post('/transactions', (req: Request, res: Response) => {
     //     filters: parsedFilters,
     // };
 
-    res.json(generateTransactionResponse(req.body))
+    res.json(generateTransactionResponse(req.body as TransactionRequest))
 });
 
 app.listen(port, () => {

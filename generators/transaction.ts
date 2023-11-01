@@ -3,10 +3,6 @@ import _ from "lodash";
 import { CURRENCIES, PATMENT_METHODS, PAYMENT_TYPES, TRANSACTION_STATUSES } from "../constants";
 
 
-export enum CardType {
-    OFF_US,
-    ON_US
-}
 
 export interface Transaction {
     transactionId: string;
@@ -24,7 +20,7 @@ export interface Transaction {
     currency: string;
     paymentMethods: string[];
     maskedCardNumber: string;
-    cardType?: CardType;
+    cardType?:  "OFF_US" | "ON_US";
     merchantReferenceId: string;
     payoutId?: string;
     countryCode: string;
@@ -95,7 +91,7 @@ export const generateTransactions = (request: TransactionRequest) => {
             currency: "AED",
             paymentMethods: faker.helpers.arrayElements(PATMENT_METHODS),
             maskedCardNumber: faker.finance.creditCardNumber(),
-            cardType: faker.helpers.enumValue(CardType),
+            cardType: faker.helpers.arrayElement(["OFF_US" , "ON_US"]),
             merchantReferenceId: faker.string.uuid(),
             payoutId: request.filters.payoutId || faker.string.uuid(),
             countryCode: faker.location.countryCode("numeric"),
@@ -136,7 +132,7 @@ export const generateTransactionResponse = (request: TransactionRequest) => {
     const response: TransactionResponse = {
         pageNumber: request.pageNumber,
         pageSize: request.pageSize,
-        totalPages: transactions.length / request.pageSize,
+        totalPages: Math.ceil(transactions.length / request.pageSize),
         currency: "AED",
         transactions: transactionsInThePage,
         netAmount,
