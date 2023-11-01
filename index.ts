@@ -5,7 +5,7 @@ import { TransactionRequest, generateTransactionResponse } from './generators/tr
 const app: Application = express();
 const port = process.env.PORT || 8000;
 
-app.get('/transactions', (req: Request, res: Response) => {
+app.post('/transactions', (req: Request, res: Response) => {
     // const { pageNumber, pageSize, keyword, searchIn, sort, showTestTranasctions, filters } = req.body;
 
     // const parsedFilters = JSON.parse(filters as string || "{}");
