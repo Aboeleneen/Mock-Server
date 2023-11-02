@@ -5,3 +5,6 @@ export const PAYMENT_TYPES = ["TERMINAL", "WEB", "Online"];
 export const CURRENCIES = ["USD", "SAR", "AED"]
 
 export const PATMENT_METHODS = ["VISA", "MASTERCARD", "MADA"]
+
+
+export const PAYOUTS_STATUSES = ["Pending", "Processed", "Rejected"]
