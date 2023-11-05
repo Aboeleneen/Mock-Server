@@ -12,7 +12,6 @@ app.post('/transactions', (req: Request, res: Response) => {
 });
 
 app.post('/payouts', (req: Request, res: Response) => {
-    console.log(req.body);
     res.json(generatePayoutsResponse(req.body as PayoutsRequest))
 });
 
