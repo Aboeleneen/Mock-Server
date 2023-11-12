@@ -1,6 +1,7 @@
 import express, { Request, Response, Application } from 'express';
 import { TransactionRequest, generateTransactionResponse } from './generators/transaction';
 import { PayoutsRequest, generatePayouts, generatePayoutsResponse } from './generators/payouts';
+import { generateStoresResponse } from './generators/stores';
 
 
 const app: Application = express();
@@ -13,6 +14,10 @@ app.post('/transactions', (req: Request, res: Response) => {
 
 app.post('/payouts', (req: Request, res: Response) => {
     res.json(generatePayoutsResponse(req.body as PayoutsRequest))
+});
+
+app.get('/merchant/:id/stores', (req: Request, res: Response) => {
+    res.json(generateStoresResponse(req.params.id, req.headers["X-CounterpartyCode"] as string))
 });
 
 app.listen(port, () => {
