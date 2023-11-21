@@ -16,7 +16,7 @@ export interface Transaction {
     originalAmount?: number;
     originalCurrency: string;
     currency: string;
-    paymentMethods: string[];
+    paymentMethods: string;
     maskedCardNumber: string;
     cardType?: string;
     merchantReferenceId: string;
@@ -90,7 +90,7 @@ export const generateTransactions = (request: TransactionRequest) => {
             originalAmount: faker.number.int({ min: 50, max: 100 }),
             originalCurrency: faker.helpers.arrayElement(CURRENCIES),
             currency: "AED",
-            paymentMethods: faker.helpers.arrayElements(PATMENT_METHODS),
+            paymentMethods: faker.helpers.arrayElement(PATMENT_METHODS),
             maskedCardNumber: faker.finance.creditCardNumber(),
             cardType: faker.helpers.arrayElement(request.filters.schemes && request.filters.schemes.length > 0 ? _.intersection(SCHEME_TYPES, request.filters.schemes) : SCHEME_TYPES),
             merchantReferenceId: faker.string.uuid(),
