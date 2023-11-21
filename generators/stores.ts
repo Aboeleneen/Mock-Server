@@ -40,8 +40,8 @@ export const generateStoresResponse = (merchantId: string, counterparty: string)
 
     for (let i = 0; i < 5; i++) {
         const store: Store = {
-            merchantId,
-            leadId: faker.string.uuid(),
+            merchantId: faker.string.uuid(),
+            leadId: merchantId,
             merchantType: faker.helpers.arrayElement(["Type 1", "Type 2", "Type 3"]),
             merchantStatus: faker.helpers.arrayElement(["Active", "Inactive"]),
             tag: faker.helpers.arrayElement(["Tag 1", "Tag 2", "Tag 3"]),
