@@ -46,7 +46,7 @@ export interface PayoutsRequest {
     sortOrder: string;
     sortField: string;
     searchIn: string[];
-    sort: "asc" | "desc";
+    sort: "Asc" | "Desc";
     filters: PayoutsFilters;
 }
 

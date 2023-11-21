@@ -1,8 +1,6 @@
 import { faker, tr } from "@faker-js/faker";
 import _ from "lodash";
-import { CURRENCIES, PATMENT_METHODS, PAYMENT_TYPES, TRANSACTION_STATUSES } from "../constants";
-
-
+import { CURRENCIES, DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, TRANSACTION_STATUSES } from "../constants";
 
 export interface Transaction {
     transactionId: string;
@@ -20,7 +18,7 @@ export interface Transaction {
     currency: string;
     paymentMethods: string[];
     maskedCardNumber: string;
-    cardType?:  "OFF_US" | "ON_US";
+    cardType?: string;
     merchantReferenceId: string;
     payoutId?: string;
     countryCode: string;
@@ -31,6 +29,7 @@ export interface Transaction {
     organizationId?: string;
     payByLinkId?: string;
     payByLinkType?: string;
+    dcc?: string;
 }
 export interface TransactionResponse {
     pageNumber: number;
@@ -59,6 +58,8 @@ export interface TransactionFilters {
     to: Date;
     storeIds: string[];
     businessId?: string;
+    schemes?: string[];
+    dcc?: string[];
 }
 
 export interface TransactionRequest {
@@ -66,7 +67,7 @@ export interface TransactionRequest {
     pageSize: number;
     keyword: string;
     searchIn: string[];
-    sort: "ASC" | "DESC";
+    sort: "Asc" | "Desc";
     showTestTranasctions: boolean;
     filters: TransactionFilters;
 }
@@ -91,7 +92,7 @@ export const generateTransactions = (request: TransactionRequest) => {
             currency: "AED",
             paymentMethods: faker.helpers.arrayElements(PATMENT_METHODS),
             maskedCardNumber: faker.finance.creditCardNumber(),
-            cardType: faker.helpers.arrayElement(["OFF_US" , "ON_US"]),
+            cardType: faker.helpers.arrayElement(request.filters.schemes && request.filters.schemes.length > 0 ? _.intersection(SCHEME_TYPES, request.filters.schemes) : SCHEME_TYPES),
             merchantReferenceId: faker.string.uuid(),
             payoutId: request.filters.payoutId || faker.string.uuid(),
             countryCode: faker.location.countryCode("numeric"),
@@ -100,7 +101,8 @@ export const generateTransactions = (request: TransactionRequest) => {
             totalRefundAmount: 0,
             refundStatus: faker.helpers.arrayElement(request.filters.refundStatus && request.filters.refundStatus.length > 0 ? request.filters.refundStatus : TRANSACTION_STATUSES),
             organizationId: faker.string.uuid(),
-            payByLinkId: faker.string.uuid()
+            payByLinkId: faker.string.uuid(),
+            dcc: faker.helpers.arrayElement(request.filters.dcc && request.filters.dcc.length > 0 ? _.intersection(DYNAMIC_CURRENCY_COVERSION, request.filters.schemes) : DYNAMIC_CURRENCY_COVERSION),
         })
     }
 
@@ -110,11 +112,11 @@ export const generateTransactions = (request: TransactionRequest) => {
 export const generateTransactionResponse = (request: TransactionRequest) => {
     let transactions = generateTransactions(request);
     transactions.sort((a, b) => {
-        if (request.sort === 'ASC') {
+        if (request.sort === 'Asc') {
             return a.transactionDateTime.getTime() - b.transactionDateTime.getTime();
         } else {
             return b.transactionDateTime.getTime() - a.transactionDateTime.getTime();
-        }   
+        }
     })
 
     const transactionsInThePage = transactions.slice(0, request.pageSize);
