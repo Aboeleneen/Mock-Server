@@ -17,3 +17,12 @@ export const SCHEME_TYPES = ["Visa", "Mastercard", "AMEX", "JCB", "Diners", "CUP
 export const DYNAMIC_CURRENCY_COVERSION = ["OriginalCurrency", "ForeignCurrency"]
 
 export const PAYOUTS_STATUSES = ["Pending", "Processed", "Rejected"]
+
+export const STORE_IDS = [
+    '18a89dca-d218-40a8-b461-844b46246be4',
+    '33b62211-f827-4196-a95c-201c55df53d1',
+    'c0b141b6-4435-4359-8e49-a78bd542813d',
+    'a98c7c24-c81e-43f9-84ed-07588280d306'
+]
+
+export const TAX_AVAILABLE_YEARS = [2022, 2023];
