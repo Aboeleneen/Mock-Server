@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { STORE_IDS } from "../constants";
 
 export interface Store {
     merchantId: string;
@@ -35,12 +36,12 @@ export interface StoresResponse {
     stores: Store[];
 }
 
-export const generateStoresResponse = (merchantId: string, counterparty: string): StoresResponse => {
+export const generateStoresResponse = (counterparty: string): StoresResponse => {
     const stores: Store[] = [];
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < STORE_IDS.length; i++) {
         const store: Store = {
-            merchantId,
+            merchantId: STORE_IDS[i],
             leadId: faker.string.uuid(),
             merchantType: faker.helpers.arrayElement(["Type 1", "Type 2", "Type 3"]),
             merchantStatus: faker.helpers.arrayElement(["Active", "Inactive"]),
@@ -53,7 +54,7 @@ export const generateStoresResponse = (merchantId: string, counterparty: string)
             deletedFlag: false,
             merchantDetails: {
                 merchantDetailsId: faker.string.uuid(),
-                merchantId,
+                merchantId: STORE_IDS[i],
                 businessType: faker.helpers.arrayElement(["Business Type 1", "Business Type 2", "Business Type 3"]),
                 outletType: faker.helpers.arrayElement(["Outlet Type 1", "Outlet Type 2", "Outlet Type 3"]),
                 mcc: faker.string.alphanumeric(),
