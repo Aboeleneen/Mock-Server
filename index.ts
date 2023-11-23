@@ -10,8 +10,8 @@ const app: Application = express();
 app.use(express.json())
 const port = process.env.PORT || 8000;
 
-app.post('/transactions', (req: Request, res: Response) => {
-    res.json(generateTransactionResponse(req.body as TransactionRequest))
+app.post('/transactions', async (req: Request, res: Response) => {
+    res.json(await generateTransactionResponse(req.body as TransactionRequest))
 });
 
 app.post('/payouts', (req: Request, res: Response) => {
@@ -19,7 +19,6 @@ app.post('/payouts', (req: Request, res: Response) => {
 });
 
 app.post('/tax-invoices', async (req: Request, res: Response) => {
-    console.log(req.body)
     res.json(await getTaxInvoices(req.body))
 });
 

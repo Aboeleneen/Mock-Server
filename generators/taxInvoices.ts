@@ -3,6 +3,7 @@ import _ from "lodash";
 import { STORE_IDS } from "../constants";
 const { writeFileSync } = require('fs');
 import jsonfile from 'jsonfile';
+import { paginateList } from "./helpers";
 
 export interface TaxInvoice {
     invoiceNumber: string;
@@ -115,23 +116,14 @@ export const generateTaxInvoices = () => {
 
 export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
     let taxInvoicesData: TaxInvoice[] = await jsonfile.readFile('./data/tax-invoices.json');
-    if (request.sortBy === "CommissionVat") {
-        taxInvoicesData.sort((a: TaxInvoice, b: TaxInvoice) => {
-            if (request.sortOrder === 'Asc') {
-                return a.commissionVat - b.commissionVat;
-            } else {
-                return b.commissionVat - a.commissionVat;
-            }
-        })
-    } else {
-        taxInvoicesData.sort((a: TaxInvoice, b: TaxInvoice) => {
-            if (request.sortOrder === 'Asc') {
-                return new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
-            } else {
-                return new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime();
-            }
-        })
-    }
+    taxInvoicesData.sort((a: TaxInvoice, b: TaxInvoice) => {
+        if (request.sortOrder === 'Asc') {
+            return new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
+        } else {
+            return new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime();
+        }
+    })
+
     taxInvoicesData = taxInvoicesData.filter((invoice: TaxInvoice) => {
         let includeItem = true;
         if (request.invoiceNumber) includeItem = includeItem && invoice.invoiceNumber.includes(request.invoiceNumber || "");
@@ -141,5 +133,5 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
         return includeItem;
     }
     )
-    return { totalPages: Math.round(taxInvoicesData.length / request.pageSize), totalInvoices: taxInvoicesData.length, taxInvoices: taxInvoicesData.slice(0, 10) };
+    return { totalPages: Math.round(taxInvoicesData.length / request.pageSize), totalInvoices: taxInvoicesData.length, taxInvoices: paginateList(taxInvoicesData, request.pageSize, request.pageNumber) };
 }
