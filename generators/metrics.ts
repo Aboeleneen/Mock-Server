@@ -42,24 +42,43 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
 }
 
 const groupTransactions = (transactions: Transaction[], chartCode: string) => {
+    let getGroupingField;
     if (chartCode === "Date") {
-        const metrics = new Map<string, MetricsResponse<string>>();
-        transactions.forEach(transaction => {
-            const transactionDate = new Date(transaction.transactionDateTime).toDateString();
-            if (metrics.has(transactionDate)) {
-                const currentMetric = metrics.get(transactionDate)!;
-                currentMetric.numberOfTransactions += 1;
-                currentMetric.totalAmount += transaction.originalAmount!;
-                metrics.set(transactionDate, currentMetric);
-            } else {
-                const currentMetric: MetricsResponse<string> = {
-                    field: transactionDate,
-                    numberOfTransactions: 1,
-                    totalAmount: transaction.originalAmount!
-                }
-                metrics.set(transactionDate, currentMetric);
-            }
-        })
-        return metrics;
+        getGroupingField = (transaction: Transaction) => new Date(transaction.transactionDateTime).toDateString();
     }
+
+    else if (chartCode === "Store") {
+        getGroupingField = (transaction: Transaction) => transaction.organizationId;
+    }
+
+    else if (chartCode === "Scheme") {
+        getGroupingField = (transaction: Transaction) => transaction.cardType!;
+    }
+
+    else {
+        getGroupingField = (transaction: Transaction) => transaction.transactionStatus!;
+    }
+
+    return groupTransactionBasedOnField(transactions, getGroupingField);
 };
+
+const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingField: (transaction: Transaction) => string) => {
+    const metrics = new Map<string, MetricsResponse<string>>();
+    transactions.forEach(transaction => {
+        const groupingField = getGroupingField(transaction)
+        if (metrics.has(groupingField)) {
+            const currentMetric = metrics.get(groupingField)!;
+            currentMetric.numberOfTransactions += 1;
+            currentMetric.totalAmount += transaction.originalAmount!;
+            metrics.set(groupingField, currentMetric);
+        } else {
+            const currentMetric: MetricsResponse<string> = {
+                field: groupingField,
+                numberOfTransactions: 1,
+                totalAmount: transaction.originalAmount!
+            }
+            metrics.set(groupingField, currentMetric);
+        }
+    })
+    return metrics;
+}
