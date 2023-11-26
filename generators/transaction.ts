@@ -138,7 +138,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
     }
     // Filters
     transactions = transactions.filter((transaction: Transaction) => {
-        if(!request.filters) return true;
+        if (!request.filters) return true;
         const { statuses, schemes, from, to, netAmountFrom, netAmountTo, storeIds, dcc, paymentMethods } = request.filters;
         let includeItem = true;
         if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);

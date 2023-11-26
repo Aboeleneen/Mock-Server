@@ -4,6 +4,7 @@ import { PayoutsRequest, generatePayouts, generatePayoutsResponse } from './gene
 import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
+import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';
 
 
 const app: Application = express();
@@ -22,7 +23,7 @@ app.post('/tax-invoices', async (req: Request, res: Response) => {
     res.json(await getTaxInvoices(req.body))
 });
 
-app.get('/tax-available-years/:merchantId',  (req: Request, res: Response) => {
+app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     const response = {
         years: TAX_AVAILABLE_YEARS
     };
@@ -31,6 +32,10 @@ app.get('/tax-available-years/:merchantId',  (req: Request, res: Response) => {
 
 app.get('/merchant/:id/stores', (req: Request, res: Response) => {
     res.json(generateStoresResponse(req.headers["X-CounterpartyCode"] as string))
+});
+
+app.post('/transactionsMetrics', async (req: Request, res: Response) => {
+    res.json(await generateTransactionMetrics(req.body as MetricsRequest));
 });
 
 app.listen(port, () => {
