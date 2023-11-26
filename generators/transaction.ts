@@ -141,13 +141,13 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (!request.filters) return true;
         const { statuses, schemes, from, to, netAmountFrom, netAmountTo, storeIds, dcc, paymentMethods } = request.filters;
         let includeItem = true;
-        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
+        // if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
         if (schemes && schemes.length) includeItem = includeItem && schemes.includes(transaction.cardType || '');
         if (from) includeItem = includeItem && transaction.transactionDateTime >= from;
         if (to) includeItem = includeItem && transaction.transactionDateTime <= to;
         if (netAmountFrom) includeItem = includeItem && transaction.netAmount >= netAmountFrom;
         if (netAmountTo) includeItem = includeItem && transaction.netAmount <= netAmountTo;
-        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
+        // if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
         if (request.searchIn.includes("PayoutId")) includeItem = includeItem && transaction.payoutId.includes(request.keyword);
