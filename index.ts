@@ -1,6 +1,6 @@
 import express, { Request, Response, Application } from 'express';
 import { TransactionRequest, generateTransactionResponse } from './generators/transaction';
-import { PayoutsRequest, generatePayouts, generatePayoutsResponse } from './generators/payouts';
+import { PayoutsRequest, PayoutsSummaryRequest, generatePayouts, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
 import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
@@ -15,9 +15,13 @@ app.post('/transactions', async (req: Request, res: Response) => {
     res.json(await generateTransactionResponse(req.body as TransactionRequest))
 });
 
-app.post('/payouts', (req: Request, res: Response) => {
-    res.json(generatePayoutsResponse(req.body as PayoutsRequest))
+app.post('/payouts', async (req: Request, res: Response) => {
+    res.json(await generatePayoutsResponse(req.body as PayoutsRequest))
 });
+
+app.post('/payoutsSummary', async (req: Request, res: Response) => {
+    res.json(await generatePayoutsSummaryResponse(req.body as PayoutsSummaryRequest));
+})
 
 app.post('/tax-invoices', async (req: Request, res: Response) => {
     res.json(await getTaxInvoices(req.body))

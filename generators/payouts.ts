@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import { PAYOUTS_STATUSES } from "../constants";
+import { PAYOUTS_STATUSES, STORE_IDS } from "../constants";
+import { readFile, writeFileSync } from "jsonfile";
+import { paginateList } from "./helpers";
 
 export interface Payout {
     referenceId: string;
@@ -43,47 +45,78 @@ export interface PayoutsRequest {
     pageNumber: number;
     pageSize: number;
     keyword: string;
-    sortOrder: string;
-    sortField: string;
+    sortOrder: "Asc" | "Desc";
+    sortBy: "PayoutDateTime" | "NetPayout";
     searchIn: string[];
-    sort: "Asc" | "Desc";
     filters: PayoutsFilters;
 }
 
-export const generatePayouts = (request: PayoutsRequest) => {
-    const numberOfItems = getNumberOfItems(request.filters);
+export interface PayoutsSummaryRequest {
+    storeIds: string[];
+}
+
+export const generatePayouts = () => {
+    const numberOfItems = 1000;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         payouts.push({
-            payoutDate: faker.date.between({ from: request.filters.from, to: request.filters.to }),
-            status: faker.helpers.arrayElement(request.filters.statuses && request.filters.statuses.length > 0 ? _.intersection(PAYOUTS_STATUSES, request.filters.statuses) : PAYOUTS_STATUSES),
+            payoutDate: faker.date.between({ from: "2023-09-01", to: "2023-12-30" }),
+            status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
             referenceId: faker.string.uuid(),
             IBAN: faker.string.uuid(),
-            grossAmount: faker.number.int({ min: 50, max: 300 }),
-            netAmount: faker.number.int({ min: request.filters.netAmountFrom || 50, max: request.filters.netAmountTo ||300 }),
-            netPayout: faker.number.int({ min: 50, max: 100 }),
+            grossAmount: faker.number.int({ min: 50, max: 5000 }),
+            netAmount: faker.number.int({ min: 50, max: 5000 }),
+            netPayout: faker.number.int({ min: 50, max: 5000 }),
             feesDeducted: faker.number.int({ min: 10, max: 50 }),
             currency: "AED",
             numberOfTransactions: faker.number.int({ min: 10, max: 50 }),
             grouped: true,
-            organizationId: faker.string.uuid(),
+            organizationId: faker.helpers.arrayElement(STORE_IDS),
         })
     }
-
+    writeFileSync("data/payouts.json", payouts, 'utf8');
     return payouts;
 }
 
-export const generatePayoutsResponse = (request: PayoutsRequest) => {
-    let payouts = generatePayouts(request);
-    payouts.sort((a, b) => {
-        if (request.sortOrder === 'Asc') {
-            return a.payoutDate.getTime() - b.payoutDate.getTime();
-        } else {
-            return b.payoutDate.getTime() - a.payoutDate.getTime();
-        }   
+export const generatePayoutsResponse = async (request: PayoutsRequest) => {
+    let payouts = await readFile('./data/payouts.json');
+
+    // Sorting
+    if (request.sortBy === "NetPayout") {
+        payouts.sort((a: Payout, b: Payout) => {
+            if (request.sortOrder === 'Asc') {
+                return a.netAmount - b.netAmount;
+            } else {
+                return b.netAmount - a.netAmount;
+            }
+        })
+    } else {
+        payouts.sort((a: Payout, b: Payout) => {
+            if (request.sortOrder === 'Asc') {
+                return new Date(a.payoutDate).getTime() - new Date(b.payoutDate).getTime();
+            } else {
+                return new Date(b.payoutDate).getTime() - new Date(a.payoutDate).getTime();
+            }
+        })
+    }
+
+    // Filters
+    payouts = payouts.filter((payout: Payout) => {
+        if (!request.filters) return true;
+        const { statuses, from, to, netAmountFrom, netAmountTo, storeIds } = request.filters;
+        let includeItem = true;
+        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(payout.status);
+        if (from) includeItem = includeItem && payout.payoutDate >= from;
+        if (to) includeItem = includeItem && payout.payoutDate <= to;
+        if (netAmountFrom) includeItem = includeItem && payout.netAmount >= netAmountFrom;
+        if (netAmountTo) includeItem = includeItem && payout.netAmount <= netAmountTo;
+        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
+        if (request.searchIn?.includes("IBAN")) includeItem = includeItem && payout.IBAN.includes(request.keyword);
+        if (request.searchIn?.includes("PayoutId")) includeItem = includeItem && payout.referenceId.includes(request.keyword);
+        return includeItem;
     })
 
-    const payoutsInThePage = payouts.slice(0, request.pageSize);
+    const payoutsInThePage = paginateList(payouts, request.pageSize, request.pageNumber);
     const organizationIds: string[] = [];
     let netAmount = 0;
     payoutsInThePage.forEach(payout => {
@@ -105,11 +138,36 @@ export const generatePayoutsResponse = (request: PayoutsRequest) => {
     return response;
 }
 
-const getNumberOfItems = (filters: PayoutsFilters) => {
-    const numberOfItems = 300;
-    const numberOfAppliedFilters = Object.keys(filters).filter((key) => {
-        const value = filters[key as keyof PayoutsFilters];
-        return value !== undefined;
-    }).length;
-    return numberOfItems - 15 * numberOfAppliedFilters;
+
+export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequest) => {
+    const { storeIds } = request;
+    let payouts = await readFile('./data/payouts.json');
+    if (storeIds && storeIds.length) {
+        payouts = payouts.filter((payout: Payout) => storeIds.includes(payout.organizationId!))
+    }
+
+    let totalBalance = 0;
+    let unSettledAmount = 0;
+    let readyToPayAmount = 0;
+    let lastUpdate: any = null;
+    payouts.forEach((payout: Payout) => {
+        totalBalance += payout.netPayout;
+        unSettledAmount += payout.grossAmount;
+        readyToPayAmount += payout.netAmount;
+        if (!lastUpdate) {
+            lastUpdate = payout.payoutDate;
+        }
+
+        if (lastUpdate && new Date(lastUpdate) < new Date(payout.payoutDate)) {
+            lastUpdate = payout.payoutDate;
+        }
+    })
+
+    return {
+        totalBalance,
+        unSettledAmount,
+        readyToPayAmount,
+        lastUpdate
+    }
+
 }
