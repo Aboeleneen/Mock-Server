@@ -149,25 +149,17 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
     let totalBalance = 0;
     let unSettledAmount = 0;
     let readyToPayAmount = 0;
-    let lastUpdate: any = null;
     payouts.forEach((payout: Payout) => {
         totalBalance += payout.netPayout;
         unSettledAmount += payout.grossAmount;
         readyToPayAmount += payout.netAmount;
-        if (!lastUpdate) {
-            lastUpdate = payout.payoutDate;
-        }
-
-        if (lastUpdate && new Date(lastUpdate) < new Date(payout.payoutDate)) {
-            lastUpdate = payout.payoutDate;
-        }
     })
 
     return {
         totalBalance,
         unSettledAmount,
         readyToPayAmount,
-        lastUpdate: lastUpdate ?? new Date()
+        lastUpdate: new Date()
     }
 
 }
