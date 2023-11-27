@@ -167,7 +167,7 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
         totalBalance,
         unSettledAmount,
         readyToPayAmount,
-        lastUpdate
+        lastUpdate: lastUpdate ?? new Date()
     }
 
 }
