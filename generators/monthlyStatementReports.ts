@@ -69,7 +69,7 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
         let includeItem = true;
         if (request.year) includeItem = includeItem && new Date(report.createDate).getFullYear() === request.year;
         if (request.month) includeItem = includeItem && (new Date(report.createDate).getMonth() + 1) === request.month;
-        if (request.storeIds) includeItem = includeItem && request.storeIds.includes(report.storeId);
+        if (request.storeIds && request.storeIds.length) includeItem = includeItem && request.storeIds.includes(report.storeId);
         return includeItem;
     }
     )
