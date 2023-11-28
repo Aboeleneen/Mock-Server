@@ -5,6 +5,7 @@ import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
 import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';
+import { generateMonthlyStatementReports, getMonthlyStatementReports } from './generators/monthlyStatementReports';
 
 
 const app: Application = express();
@@ -24,9 +25,12 @@ app.post('/payoutsSummary', async (req: Request, res: Response) => {
 })
 
 app.post('/tax-invoices', async (req: Request, res: Response) => {
-    res.json(await getTaxInvoices(req.body))
+    res.json(await getTaxInvoices(req.body));
 });
 
+app.post("/monthly-statement-reports", async (req: Request, res: Response) => {
+    res.json(await getMonthlyStatementReports(req.body));
+})
 app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     const response = {
         years: TAX_AVAILABLE_YEARS
