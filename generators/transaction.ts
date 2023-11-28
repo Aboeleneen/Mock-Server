@@ -33,6 +33,7 @@ export interface Transaction {
     payByLinkId?: string;
     payByLinkType?: string;
     dcc?: string;
+    exchangeRate?: number;
 }
 export interface TransactionResponse {
     pageNumber: number;
@@ -110,6 +111,7 @@ export const generateTransactions = () => {
             organizationId: faker.helpers.arrayElement(STORE_IDS),
             payByLinkId: faker.string.uuid(),
             dcc: faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION),
+            exchangeRate: faker.number.float({ min: 1, max: 5 })
         })
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');

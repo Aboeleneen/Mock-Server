@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { STORE_IDS } from "../constants";
-
+import { writeFileSync } from 'fs';
+import jsonfile from 'jsonfile';
 export interface Store {
     merchantId: string;
     leadId: string | null;
@@ -36,17 +37,16 @@ export interface StoresResponse {
     stores: Store[];
 }
 
-export const generateStoresResponse = (counterparty: string): StoresResponse => {
+export const generateStores = () => {
     const stores: Store[] = [];
-
     for (let i = 0; i < STORE_IDS.length; i++) {
-        const store: Store = {
+        stores.push({
             merchantId: STORE_IDS[i],
             leadId: faker.string.uuid(),
             merchantType: faker.helpers.arrayElement(["Type 1", "Type 2", "Type 3"]),
             merchantStatus: faker.helpers.arrayElement(["Active", "Inactive"]),
             tag: faker.helpers.arrayElement(["Tag 1", "Tag 2", "Tag 3"]),
-            counterparty: counterparty,
+            counterparty: faker.location.countryCode(),
             createdBy: faker.person.firstName(),
             updatedBy: faker.person.firstName(),
             createdDate: faker.date.past(),
@@ -59,22 +59,25 @@ export const generateStoresResponse = (counterparty: string): StoresResponse => 
                 outletType: faker.helpers.arrayElement(["Outlet Type 1", "Outlet Type 2", "Outlet Type 3"]),
                 mcc: faker.string.alphanumeric(),
                 businessDomain: faker.helpers.arrayElement(["Domain 1", "Domain 2", "Domain 3"]),
-                legalName: faker.company.name(),
-                legalNameAr: faker.company.name(),
-                tradingName: faker.company.name(),
-                nickname: faker.random.word(),
+                legalName: `Store ${i + 1}`,
+                legalNameAr:`Store ${i + 1} - Ar`,
+                tradingName: `Store ${i + 1}`,
+                nickname: `Store ${i + 1}`,
                 tradingCurrency: faker.finance.currencyCode(),
                 registrationNumber: faker.string.alphanumeric(),
                 vatNumber: faker.string.alphanumeric()
             }
-        };
-
-        stores.push(store);
+        })
     }
+    writeFileSync("data/stores.json", JSON.stringify(stores), 'utf8');
 
-    const response: StoresResponse = {
+    return stores;
+}
+
+export const generateStoresResponse = async (): Promise<StoresResponse> => {
+    const stores: Store[] = await jsonfile.readFile('./data/stores.json');
+
+    return {
         stores
     };
-
-    return response;
 };

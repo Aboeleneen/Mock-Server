@@ -5,7 +5,7 @@ import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
 import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';
-import { generateMonthlyStatementReports, getMonthlyStatementReports } from './generators/monthlyStatementReports';
+import { getMonthlyStatementReports } from './generators/monthlyStatementReports';
 
 
 const app: Application = express();
@@ -38,8 +38,8 @@ app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     res.json(response);
 });
 
-app.get('/merchant/:id/stores', (req: Request, res: Response) => {
-    res.json(generateStoresResponse(req.headers["X-CounterpartyCode"] as string))
+app.get('/merchant/:id/stores', async (req: Request, res: Response) => {
+    res.json(await generateStoresResponse())
 });
 
 app.post('/transactionsMetrics', async (req: Request, res: Response) => {
