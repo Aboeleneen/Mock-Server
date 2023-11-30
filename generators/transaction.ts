@@ -1,6 +1,6 @@
 import { faker, tr } from "@faker-js/faker";
 import _ from "lodash";
-import { CURRENCIES, DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, STORE_IDS, TRANSACTION_STATUSES } from "../constants";
+import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, STORE_IDS, TRANSACTION_STATUSES } from "../constants";
 import { readFile } from "jsonfile";
 import { paginateList } from "./helpers";
 import { writeFileSync } from 'fs';
@@ -17,7 +17,7 @@ export interface Transaction {
     financedAmount?: number;
     cashPayment?: number;
     originalAmount?: number;
-    originalCurrency: string;
+    originalCurrency?: string;
     currency: string;
     paymentMethod: string;
     maskedCardNumber: string;
@@ -83,9 +83,11 @@ export const generateTransactions = () => {
     for (let index = 0; index < 50; index++) {
         terminalIds.push(faker.string.uuid());
     }
+    const USD_TO_AED_RATE = 3.67;
     for (let i = 0; i < numberOfItems; i++) {
         let transactionStatus = faker.helpers.arrayElement(TRANSACTION_STATUSES);
-        let netAmount = faker.number.float({ min: 100, max: 100000 })
+        let amount = faker.number.float({ min: 100, max: 100000 })
+        let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
         transactions.push({
             transactionId: faker.string.uuid(),
             orderId: faker.string.uuid(),
@@ -93,12 +95,12 @@ export const generateTransactions = () => {
             transactionStatus,
             tid: faker.helpers.arrayElement(terminalIds),
             paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
-            grossAmount: faker.number.int({ min: 50, max: 300 }),
-            netAmount,
+            grossAmount: amount,
+            netAmount: faker.number.float({ min: 100, max: 100000 }),
             financedAmount: faker.number.int({ min: 50, max: 1000 }),
             cashPayment: faker.number.int({ min: 50, max: 1000 }),
-            originalAmount: faker.number.float({ min: 100, max: 100000 }),
-            originalCurrency: faker.helpers.arrayElement(CURRENCIES),
+            originalAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : undefined,
+            originalCurrency: dcc === "ForeignCurrency" ? "USD" : undefined,
             currency: "AED",
             paymentMethod: faker.helpers.arrayElement(PATMENT_METHODS),
             maskedCardNumber: faker.finance.creditCardNumber(),
@@ -108,12 +110,12 @@ export const generateTransactions = () => {
             countryCode: faker.location.countryCode("numeric"),
             phoneNumber: faker.phone.number(),
             batchNumber: faker.finance.accountNumber(),
-            totalRefundAmount: getRefundAmount(transactionStatus, netAmount),
+            totalRefundAmount: getRefundAmount(transactionStatus, amount),
             refundStatus: faker.helpers.arrayElement(TRANSACTION_STATUSES),
             organizationId: faker.helpers.arrayElement(STORE_IDS),
             payByLinkId: faker.string.uuid(),
-            dcc: faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION),
-            exchangeRate: faker.number.float({ min: 1, max: 5 })
+            dcc,
+            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined
         })
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');

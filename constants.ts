@@ -8,7 +8,7 @@ export const TRANSACTION_STATUSES = [
 
 export const PAYMENT_TYPES = ["TERMINAL", "WEB", "Online"];
 
-export const CURRENCIES = ["USD", "SAR", "AED"]
+export const CURRENCIES = ["USD", "AED"]
 
 export const PATMENT_METHODS = ["Online", "Terminal"]
 
