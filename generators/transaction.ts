@@ -187,9 +187,9 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
     let totalAmount = 0;
     transactionsInThePage.forEach(transaction => {
         organizationIds.push(transaction.organizationId!);
-        netAmount += transaction.netAmount;
-        totalSales += transaction.grossAmount;
-        totalAmount += transaction.grossAmount;
+        // netAmount += transaction.netAmount;
+        // totalSales += transaction.grossAmount;
+        // totalAmount += transaction.grossAmount;
     });
 
     const response: TransactionResponse = {
