@@ -84,18 +84,20 @@ export const generateTransactions = () => {
         terminalIds.push(faker.string.uuid());
     }
     for (let i = 0; i < numberOfItems; i++) {
+        let transactionStatus = faker.helpers.arrayElement(TRANSACTION_STATUSES);
+        let netAmount = faker.number.float({ min: 100, max: 100000 })
         transactions.push({
             transactionId: faker.string.uuid(),
             orderId: faker.string.uuid(),
             transactionDateTime: faker.date.between({ from: "2023-05-01", to: "2023-11-30" }),
-            transactionStatus: faker.helpers.arrayElement(TRANSACTION_STATUSES),
+            transactionStatus,
             tid: faker.helpers.arrayElement(terminalIds),
             paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
             grossAmount: faker.number.int({ min: 50, max: 300 }),
-            netAmount: faker.number.int({ min: 50, max: 300 }),
-            financedAmount: faker.number.int({ min: 50, max: 100 }),
-            cashPayment: faker.number.int({ min: 50, max: 100 }),
-            originalAmount: faker.number.int({ min: 50, max: 100 }),
+            netAmount,
+            financedAmount: faker.number.int({ min: 50, max: 1000 }),
+            cashPayment: faker.number.int({ min: 50, max: 1000 }),
+            originalAmount: faker.number.float({ min: 100, max: 100000 }),
             originalCurrency: faker.helpers.arrayElement(CURRENCIES),
             currency: "AED",
             paymentMethod: faker.helpers.arrayElement(PATMENT_METHODS),
@@ -106,7 +108,7 @@ export const generateTransactions = () => {
             countryCode: faker.location.countryCode("numeric"),
             phoneNumber: faker.phone.number(),
             batchNumber: faker.finance.accountNumber(),
-            totalRefundAmount: 0,
+            totalRefundAmount: getRefundAmount(transactionStatus, netAmount),
             refundStatus: faker.helpers.arrayElement(TRANSACTION_STATUSES),
             organizationId: faker.helpers.arrayElement(STORE_IDS),
             payByLinkId: faker.string.uuid(),
@@ -116,6 +118,24 @@ export const generateTransactions = () => {
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');
     return transactions;
+}
+
+const getRefundAmount = (refundStatus: string, originalAmount: number) => {
+    switch (refundStatus) {
+        case "PartialRefundDone":
+        case "PartialRefundInitiated":
+            return faker.number.float({ min: 100, max: originalAmount })
+        case "ExcessiveRefundDone":
+        case "ExcessiveRefundInitiated":
+            return faker.number.float({ min: 100, max: originalAmount - 100 })
+            break;
+        case "FullRefundDone":
+        case "FullRefundInitiated":
+            return originalAmount;
+        default:
+            break;
+    }
+    return 0;
 }
 
 export const generateTransactionResponse = async (request: TransactionRequest) => {
@@ -143,13 +163,13 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (!request.filters) return true;
         const { statuses, schemes, from, to, netAmountFrom, netAmountTo, storeIds, dcc, paymentMethods } = request.filters;
         let includeItem = true;
-        // if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
+        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
         if (schemes && schemes.length) includeItem = includeItem && schemes.includes(transaction.cardType || '');
         if (from) includeItem = includeItem && transaction.transactionDateTime >= from;
         if (to) includeItem = includeItem && transaction.transactionDateTime <= to;
         if (netAmountFrom) includeItem = includeItem && transaction.netAmount >= netAmountFrom;
         if (netAmountTo) includeItem = includeItem && transaction.netAmount <= netAmountTo;
-        // if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
+        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
         if (request.searchIn?.includes("PayoutId")) includeItem = includeItem && transaction.payoutId.includes(request.keyword);
