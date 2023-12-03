@@ -176,8 +176,8 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
         if (includeItem && request.searchIn) {
             if (request.searchIn?.includes("PayoutId")) includeItem = transaction.payoutId.includes(request.keyword);
-            if (request.searchIn?.includes("TerminalId")) includeItem = transaction.tid.includes(request.keyword);
-            if (request.searchIn?.includes("TransactionId")) includeItem = transaction.transactionId.includes(request.keyword);
+            if (request.searchIn?.includes("TerminalId")) includeItem = includeItem || transaction.tid.includes(request.keyword);
+            if (request.searchIn?.includes("TransactionId")) includeItem = includeItem || transaction.transactionId.includes(request.keyword);
         }
         return includeItem;
     })
