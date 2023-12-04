@@ -78,6 +78,6 @@ export const generateStoresResponse = async (): Promise<StoresResponse> => {
     const stores: Store[] = await jsonfile.readFile('./data/stores.json');
 
     return {
-        stores: [stores[0]]
+        stores
     };
 };
