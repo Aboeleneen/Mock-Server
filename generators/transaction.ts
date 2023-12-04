@@ -71,7 +71,7 @@ export interface TransactionRequest {
     keyword: string;
     searchIn: string[];
     sortOrder: "Asc" | "Desc";
-    sortBy: "TransactionDateTime" | "NetAmount";
+    sortBy: "TransactionDateTime" | "Amount";
     showTestTranasctions: boolean;
     filters: TransactionFilters;
 }
@@ -143,12 +143,12 @@ const getRefundAmount = (refundStatus: string, originalAmount: number) => {
 export const generateTransactionResponse = async (request: TransactionRequest) => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
     // Sorting
-    if (request.sortBy === "NetAmount") {
+    if (request.sortBy === "Amount") {
         transactions.sort((a: Transaction, b: Transaction) => {
             if (request.sortOrder === 'Asc') {
-                return a.netAmount - b.netAmount;
+                return a.grossAmount - b.grossAmount;
             } else {
-                return b.netAmount - a.netAmount;
+                return b.grossAmount - a.grossAmount;
             }
         })
     } else {
