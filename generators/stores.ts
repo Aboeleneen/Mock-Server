@@ -60,7 +60,7 @@ export const generateStores = () => {
                 mcc: faker.string.alphanumeric(),
                 businessDomain: faker.helpers.arrayElement(["Domain 1", "Domain 2", "Domain 3"]),
                 legalName: `Store ${i + 1}`,
-                legalNameAr:`Store ${i + 1} - Ar`,
+                legalNameAr: `Store ${i + 1} - Ar`,
                 tradingName: `Store ${i + 1}`,
                 nickname: `Store ${i + 1}`,
                 tradingCurrency: faker.finance.currencyCode(),
@@ -78,6 +78,6 @@ export const generateStoresResponse = async (): Promise<StoresResponse> => {
     const stores: Store[] = await jsonfile.readFile('./data/stores.json');
 
     return {
-        stores
+        stores: [stores[0]]
     };
 };

@@ -13,7 +13,6 @@ app.use(express.json())
 const port = process.env.PORT || 8000;
 
 app.post('/transactions', async (req: Request, res: Response) => {
-    throw new Error("Server is down");
     res.json(await generateTransactionResponse(req.body as TransactionRequest))
 });
 
