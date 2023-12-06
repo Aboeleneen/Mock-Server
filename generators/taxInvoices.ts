@@ -69,7 +69,7 @@ export const generateTaxInvoices = () => {
     const taxInvoices: TaxInvoice[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         let month = faker.number.int({ min: 1, max: 12 });
-        let year = faker.number.int({ min: 2022, max: 2023 });
+        let year = faker.number.int({ min: 2023, max: 2024 });
         taxInvoices.push({
             storeId: STORE_IDS[faker.number.int({ min: 0, max: STORE_IDS.length - 1 })],
             invoiceNumber: faker.string.uuid(),
