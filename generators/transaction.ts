@@ -4,6 +4,7 @@ import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPE
 import { readFile } from "jsonfile";
 import { paginateList } from "./helpers";
 import { writeFileSync } from 'fs';
+import { Payout } from "./payouts";
 
 export interface Transaction {
     transactionId: string;
@@ -76,9 +77,11 @@ export interface TransactionRequest {
     filters: TransactionFilters;
 }
 
-export const generateTransactions = () => {
+export const generateTransactions = async () => {
     const numberOfItems = 1000;
     const transactions: Transaction[] = [];
+    const payouts: Payout[] = await readFile('./data/payouts.json');
+    const payoutIds = payouts.map(payout => payout.referenceId);
     let terminalIds = [];
     for (let index = 0; index < 50; index++) {
         terminalIds.push(faker.string.uuid());
@@ -91,7 +94,7 @@ export const generateTransactions = () => {
         transactions.push({
             transactionId: faker.string.uuid(),
             orderId: faker.string.uuid(),
-            transactionDateTime: faker.date.between({ from: "2023-05-01", to: "2023-11-30" }),
+            transactionDateTime: faker.date.between({ from: "2023-10-15", to: "2023-12-30" }),
             transactionStatus,
             tid: faker.helpers.arrayElement(terminalIds),
             paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
@@ -106,7 +109,7 @@ export const generateTransactions = () => {
             maskedCardNumber: faker.finance.creditCardNumber(),
             cardType: faker.helpers.arrayElement(SCHEME_TYPES),
             merchantReferenceId: faker.string.uuid(),
-            payoutId: faker.string.uuid(),
+            payoutId: faker.helpers.arrayElement(payoutIds),
             countryCode: faker.location.countryCode("numeric"),
             phoneNumber: faker.phone.number(),
             batchNumber: faker.finance.accountNumber(),

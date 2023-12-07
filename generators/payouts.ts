@@ -3,6 +3,7 @@ import _ from "lodash";
 import { PAYOUTS_STATUSES, STORE_IDS } from "../constants";
 import { readFile, writeFileSync } from "jsonfile";
 import { paginateList } from "./helpers";
+import { Transaction } from "./transaction";
 
 export interface Payout {
     referenceId: string;
@@ -55,15 +56,15 @@ export interface PayoutsSummaryRequest {
     storeIds: string[];
 }
 
-export const generatePayouts = () => {
-    const numberOfItems = 1000;
+export const generatePayouts = async () => {
+    const numberOfItems = 100;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         payouts.push({
-            payoutDate: faker.date.between({ from: "2023-09-01", to: "2023-12-30" }),
+            payoutDate: faker.date.between({ from: "2023-10-15", to: "2023-12-30" }),
             status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
             referenceId: faker.string.uuid(),
-            IBAN: faker.string.uuid(),
+            IBAN: "AE" + faker.number.bigInt({ min: 100000000000000000000, max: 999999999999999999999 }).toString().substring(0, 21),
             grossAmount: faker.number.int({ min: 50, max: 5000 }),
             netAmount: faker.number.int({ min: 50, max: 5000 }),
             netPayout: faker.number.int({ min: 50, max: 5000 }),
@@ -80,8 +81,8 @@ export const generatePayouts = () => {
 
 export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     let payouts = await readFile('./data/payouts.json');
-
-    // Sorting
+    let transactions: Transaction[] = await readFile('./data/transactions.json');
+    // Sorting  
     if (request.sortBy === "NetPayout") {
         payouts.sort((a: Payout, b: Payout) => {
             if (request.sortOrder === 'Asc') {
@@ -116,13 +117,18 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         return includeItem;
     })
 
-    const payoutsInThePage = paginateList(payouts, request.pageSize, request.pageNumber);
+    let payoutsInThePage: Payout[] = paginateList(payouts, request.pageSize, request.pageNumber);
     const organizationIds: string[] = [];
     let netAmount = 0;
     payoutsInThePage.forEach(payout => {
         organizationIds.push(payout.organizationId!);
         netAmount += payout.netAmount;
     });
+
+    payoutsInThePage = payoutsInThePage.map(payout => ({
+        ...payout,
+        numberOfTransactions: transactions.filter(transaction => transaction.payoutId === payout.referenceId).length
+    }))
 
     const response: PayoutsResponse = {
         pageNumber: request.pageNumber,
