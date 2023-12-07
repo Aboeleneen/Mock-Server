@@ -112,8 +112,13 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (netAmountFrom) includeItem = includeItem && payout.netAmount >= netAmountFrom;
         if (netAmountTo) includeItem = includeItem && payout.netAmount <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
-        if (request.searchIn?.includes("IBAN")) includeItem = includeItem && payout.IBAN.includes(request.keyword);
-        if (request.searchIn?.includes("PayoutId")) includeItem = includeItem && payout.referenceId.includes(request.keyword);
+        if (includeItem && request.searchIn && request.searchIn.length > 0) {
+            let searchMatch = false; 
+            if (request.searchIn?.includes("IBAN")) searchMatch = payout.IBAN.includes(request.keyword);
+            if (request.searchIn?.includes("PayoutId")) searchMatch = searchMatch || payout.referenceId.includes(request.keyword);
+            return searchMatch;
+        }
+       
         return includeItem;
     })
 

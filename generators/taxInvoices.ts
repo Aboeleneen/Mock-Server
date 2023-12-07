@@ -7,41 +7,23 @@ import { paginateList } from "./helpers";
 
 export interface TaxInvoice {
     invoiceNumber: string;
-    vatNumber: string;
     month: number;
     year: number;
-
-    customerName: string;
-    country: string;
-    city: string;
-    address: string;
-    phoneNumber: string;
-    email: string;
 
     totalValueOfTransactions: number;
     totalNumberOfTransactions: number;
 
-    totalFee: number;
+    totalAmount: number;
     totalVat: number;
-    deductionVat: number;
+    deducationsAmount: number;
+    deductionsVat: number;
+    commissionAmout: number;
     commissionVat: number;
+    refundAmount: number;
     refundVat: number;
-    totalVatFee: number;
-
+    settlementFees: number;
     currency: string
-
     invoiceDate: Date;
-    customerVatNumber: string;
-
-    totalCollectionFee: number;
-    totalCollectionVatFee: number;
-    totalSubscriptionVatFee: number;
-    totalChargeRefundVatFee: number;
-    totalCollectionVat: number;
-    totalSubscriptionFee: number;
-    totalSubscriptionVat: number;
-    totalChargeRefundFee: number;
-    totalChargeRefundVat: number;
     storeId: string;
 }
 
@@ -69,44 +51,26 @@ export const generateTaxInvoices = () => {
     const taxInvoices: TaxInvoice[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         let month = faker.number.int({ min: 1, max: 12 });
-        let year = faker.number.int({ min: 2022, max: 2023 });
+        let year = faker.number.int({ min: 2023, max: 2024 });
         taxInvoices.push({
             storeId: STORE_IDS[faker.number.int({ min: 0, max: STORE_IDS.length - 1 })],
             invoiceNumber: faker.string.uuid(),
-            vatNumber: faker.string.uuid(),
             month,
             year,
-            customerName: faker.person.fullName(),
-            country: faker.location.country(),
-            city: faker.location.city(),
-            address: faker.location.streetAddress(),
-            phoneNumber: faker.phone.number(),
-            email: faker.internet.email(),
-
             totalValueOfTransactions: faker.number.float({ min: 10, max: 300 }),
             totalNumberOfTransactions: faker.number.int({ min: 10, max: 300 }),
-
-            totalFee: faker.number.float({ min: 10, max: 300 }),
+            totalAmount: faker.number.float({ min: 1000, max: 10000 }),
             totalVat: faker.number.float({ min: 10, max: 300 }),
-            deductionVat: faker.number.float({ min: 10, max: 300 }),
+            deducationsAmount: faker.number.float({ min: 100, max: 1000 }),
+            deductionsVat: faker.number.float({ min: 10, max: 300 }),
+            commissionAmout: faker.number.float({ min: 100, max: 10000 }),
             commissionVat: faker.number.float({ min: 10, max: 300 }),
+            refundAmount: faker.number.float({ min: 100, max: 1000 }),
             refundVat: faker.number.float({ min: 10, max: 300 }),
-            totalVatFee: faker.number.float({ min: 10, max: 300 }),
-
+            settlementFees: faker.number.float({ min: 100, max: 1000 }),
             currency: "AED",
 
-            invoiceDate: new Date(`${year}-${month}-${faker.number.int({ min: 2, max: 30 })}`),
-            customerVatNumber: faker.string.uuid(),
-
-            totalCollectionFee: faker.number.float({ min: 10, max: 300 }),
-            totalCollectionVatFee: faker.number.float({ min: 10, max: 300 }),
-            totalSubscriptionVatFee: faker.number.float({ min: 10, max: 300 }),
-            totalChargeRefundVatFee: faker.number.float({ min: 10, max: 300 }),
-            totalCollectionVat: faker.number.float({ min: 10, max: 300 }),
-            totalSubscriptionFee: faker.number.float({ min: 10, max: 300 }),
-            totalSubscriptionVat: faker.number.float({ min: 10, max: 300 }),
-            totalChargeRefundFee: faker.number.float({ min: 10, max: 300 }),
-            totalChargeRefundVat: faker.number.float({ min: 10, max: 300 }),
+            invoiceDate: new Date(`${year}-${month}-${faker.number.int({ min: 2, max: 30 })}`)
         })
     }
     writeFileSync("data/tax-invoices.json", JSON.stringify(taxInvoices), 'utf8');
@@ -129,7 +93,7 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
         if (request.invoiceNumber) includeItem = includeItem && invoice.invoiceNumber.includes(request.invoiceNumber || "");
         if (request.taxYear) includeItem = includeItem && new Date(invoice.invoiceDate).getFullYear() === request.taxYear;
         if (request.taxMonth) includeItem = includeItem && (new Date(invoice.invoiceDate).getMonth() + 1) === request.taxMonth;
-        if (request.storeIds) includeItem = includeItem && request.storeIds.includes(invoice.storeId);
+        if (request.storeIds && request.storeIds.length) includeItem = includeItem && request.storeIds.includes(invoice.storeId);
         return includeItem;
     }
     )

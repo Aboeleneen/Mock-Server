@@ -172,15 +172,17 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (schemes && schemes.length) includeItem = includeItem && schemes.includes(transaction.cardType || '');
         if (from) includeItem = includeItem && transaction.transactionDateTime >= from;
         if (to) includeItem = includeItem && transaction.transactionDateTime <= to;
-        if (netAmountFrom) includeItem = includeItem && transaction.netAmount >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && transaction.netAmount <= netAmountTo;
+        if (netAmountFrom) includeItem = includeItem && transaction.grossAmount >= netAmountFrom;
+        if (netAmountTo) includeItem = includeItem && transaction.grossAmount <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
-        if (includeItem && request.searchIn) {
-            if (request.searchIn?.includes("PayoutId")) includeItem = transaction.payoutId.includes(request.keyword);
-            if (request.searchIn?.includes("TerminalId")) includeItem = includeItem || transaction.tid.includes(request.keyword);
-            if (request.searchIn?.includes("TransactionId")) includeItem = includeItem || transaction.transactionId.includes(request.keyword);
+        if (includeItem && request.searchIn && request.searchIn.length > 0) {
+            let searchMatch = false; 
+            if (request.searchIn?.includes("PayoutId")) searchMatch = transaction.payoutId.includes(request.keyword);
+            if (request.searchIn?.includes("TerminalId")) searchMatch = searchMatch || transaction.tid.includes(request.keyword);
+            if (request.searchIn?.includes("TransactionId")) searchMatch = searchMatch || transaction.transactionId.includes(request.keyword);
+            return searchMatch;
         }
         return includeItem;
     })
