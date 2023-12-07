@@ -109,8 +109,8 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (statuses && statuses.length) includeItem = includeItem && statuses.includes(payout.status);
         if (from) includeItem = includeItem && payout.payoutDate >= from;
         if (to) includeItem = includeItem && payout.payoutDate <= to;
-        if (netAmountFrom) includeItem = includeItem && payout.netAmount >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && payout.netAmount <= netAmountTo;
+        if (netAmountFrom) includeItem = includeItem && payout.netPayout >= netAmountFrom;
+        if (netAmountTo) includeItem = includeItem && payout.netPayout <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
         if (includeItem && request.searchIn && request.searchIn.length > 0) {
             let searchMatch = false; 
