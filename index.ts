@@ -13,12 +13,10 @@ app.use(express.json())
 const port = process.env.PORT || 8000;
 
 app.post('/transactions', async (req: Request, res: Response) => {
-    await generateTransactions()
     res.json(await generateTransactionResponse(req.body as TransactionRequest))
 });
 
 app.post('/payouts', async (req: Request, res: Response) => {
-    await generatePayouts()
     res.json(await generatePayoutsResponse(req.body as PayoutsRequest))
 });
 
