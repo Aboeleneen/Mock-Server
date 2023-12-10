@@ -69,13 +69,13 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
         if (metrics.has(groupingField)) {
             const currentMetric = metrics.get(groupingField)!;
             currentMetric.numberOfTransactions += 1;
-            currentMetric.totalAmount += transaction.originalAmount!;
+            currentMetric.totalAmount += transaction.grossAmount;
             metrics.set(groupingField, currentMetric);
         } else {
             const currentMetric: MetricsResponse<string> = {
                 field: groupingField,
                 numberOfTransactions: 1,
-                totalAmount: transaction.originalAmount!
+                totalAmount: transaction.grossAmount
             }
             metrics.set(groupingField, currentMetric);
         }

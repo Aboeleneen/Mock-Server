@@ -1,7 +1,7 @@
 import express, { Request, Response, Application } from 'express';
-import { TransactionRequest, generateTransactionResponse } from './generators/transaction';
+import { TransactionRequest, generateTransactionResponse, generateTransactions } from './generators/transaction';
 import { PayoutsRequest, PayoutsSummaryRequest, generatePayouts, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
-import { generateStoresResponse } from './generators/stores';
+import { generateStores, generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
 import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';

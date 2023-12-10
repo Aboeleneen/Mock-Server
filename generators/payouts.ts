@@ -61,7 +61,7 @@ export const generatePayouts = () => {
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         payouts.push({
-            payoutDate: faker.date.between({ from: "2023-09-01", to: "2023-12-30" }),
+            payoutDate: faker.date.between({ from: "2023-10-15", to: "2023-12-30" }),
             status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
             referenceId: faker.string.nanoid(6),
             IBAN: faker.string.uuid(),
@@ -87,9 +87,9 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     if (request.sortBy === "NetPayout") {
         payouts.sort((a: Payout, b: Payout) => {
             if (request.sortOrder === 'Asc') {
-                return a.netAmount - b.netAmount;
+                return a.netPayout - b.netPayout;
             } else {
-                return b.netAmount - a.netAmount;
+                return b.netPayout - a.netPayout;
             }
         })
     } else {
@@ -110,8 +110,8 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (statuses && statuses.length) includeItem = includeItem && statuses.includes(payout.status);
         if (from) includeItem = includeItem && payout.payoutDate >= from;
         if (to) includeItem = includeItem && payout.payoutDate <= to;
-        if (netAmountFrom) includeItem = includeItem && payout.netAmount >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && payout.netAmount <= netAmountTo;
+        if (netAmountFrom) includeItem = includeItem && payout.netPayout >= netAmountFrom;
+        if (netAmountTo) includeItem = includeItem && payout.netPayout <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
         if (includeItem && request.searchIn && request.searchIn.length > 0) {
             let searchMatch = false; 
