@@ -10,7 +10,7 @@ import { getMonthlyStatementReports } from './generators/monthlyStatementReports
 
 const app: Application = express();
 app.use(express.json())
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 8000;
 
 app.post('/transactions', async (req: Request, res: Response) => {
     await generateTransactions()
