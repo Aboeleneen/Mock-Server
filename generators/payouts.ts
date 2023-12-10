@@ -3,6 +3,7 @@ import _ from "lodash";
 import { PAYOUTS_STATUSES, STORE_IDS } from "../constants";
 import { readFile, writeFileSync } from "jsonfile";
 import { paginateList } from "./helpers";
+import { Transaction } from "./transaction";
 
 export interface Payout {
     referenceId: string;
@@ -56,13 +57,13 @@ export interface PayoutsSummaryRequest {
 }
 
 export const generatePayouts = () => {
-    const numberOfItems = 1000;
+    const numberOfItems = 600;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         payouts.push({
             payoutDate: faker.date.between({ from: "2023-09-01", to: "2023-12-30" }),
             status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
-            referenceId: faker.string.uuid(),
+            referenceId: faker.string.nanoid(6),
             IBAN: faker.string.uuid(),
             grossAmount: faker.number.int({ min: 50, max: 5000 }),
             netAmount: faker.number.int({ min: 50, max: 5000 }),
@@ -80,6 +81,7 @@ export const generatePayouts = () => {
 
 export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     let payouts = await readFile('./data/payouts.json');
+    let transactions: Transaction[] = await readFile('./data/transactions.json');
 
     // Sorting
     if (request.sortBy === "NetPayout") {
@@ -121,7 +123,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         return includeItem;
     })
 
-    const payoutsInThePage = paginateList(payouts, request.pageSize, request.pageNumber);
+    const payoutsInThePage: Payout[] = paginateList(payouts, request.pageSize, request.pageNumber);
     const organizationIds: string[] = [];
     let netAmount = 0;
     payoutsInThePage.forEach(payout => {
@@ -129,12 +131,19 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         netAmount += payout.netAmount;
     });
 
+    const returnedPayouts =payoutsInThePage.map(payout=> ({
+        ...payout,
+        numberOfTransactions: transactions.filter(transaction => transaction.payoutId === payout.referenceId).length
+    }))
+
+
+
     const response: PayoutsResponse = {
         pageNumber: request.pageNumber,
         pageSize: request.pageSize,
         totalPages: Math.ceil(payouts.length / request.pageSize),
         currency: "AED",
-        payouts: payoutsInThePage,
+        payouts: returnedPayouts,
         netAmount,
         organizationIds,
         TotalPayouts: payouts.length,
