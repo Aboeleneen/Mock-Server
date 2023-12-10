@@ -57,13 +57,13 @@ export interface PayoutsSummaryRequest {
 }
 
 export const generatePayouts = () => {
-    const numberOfItems = 600;
+    const numberOfItems = 1000;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         payouts.push({
-            payoutDate: faker.date.between({ from: "2023-10-15", to: "2023-12-30" }),
+            payoutDate: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
             status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
-            referenceId: faker.string.nanoid(6),
+            referenceId: faker.string.nanoid(12),
             IBAN: faker.string.uuid(),
             grossAmount: faker.number.int({ min: 50, max: 5000 }),
             netAmount: faker.number.int({ min: 50, max: 5000 }),

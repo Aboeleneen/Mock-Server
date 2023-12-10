@@ -94,7 +94,7 @@ export const  generateTransactions = async() => {
         transactions.push({
             transactionId: faker.string.uuid(),
             orderId: faker.string.uuid(),
-            transactionDateTime: faker.date.between({ from: "2023-10-15", to: "2023-12-30" }),
+            transactionDateTime: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
             transactionStatus,
             tid: faker.helpers.arrayElement(terminalIds),
             paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
