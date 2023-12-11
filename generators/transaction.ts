@@ -77,7 +77,7 @@ export interface TransactionRequest {
     filters: TransactionFilters;
 }
 
-export const  generateTransactions = async() => {
+export const generateTransactions = async () => {
     const numberOfItems = 1000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
@@ -92,7 +92,7 @@ export const  generateTransactions = async() => {
         let amount = faker.number.float({ min: 100, max: 100000 })
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
         transactions.push({
-            transactionId: faker.string.uuid(),
+            transactionId: faker.string.nanoid(faker.helpers.arrayElement([6,8,10,12,14])),
             orderId: faker.string.uuid(),
             transactionDateTime: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
             transactionStatus,
@@ -145,7 +145,7 @@ const getRefundAmount = (refundStatus: string, originalAmount: number) => {
 
 export const generateTransactionResponse = async (request: TransactionRequest) => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
-    
+
 
     // Sorting
     if (request.sortBy === "Amount") {
@@ -180,7 +180,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
         if (includeItem && request.searchIn && request.searchIn.length > 0) {
-            let searchMatch = false; 
+            let searchMatch = false;
             if (request.searchIn?.includes("PayoutId")) searchMatch = transaction.payoutId.includes(request.keyword);
             if (request.searchIn?.includes("TerminalId")) searchMatch = searchMatch || transaction.tid.includes(request.keyword);
             if (request.searchIn?.includes("TransactionId")) searchMatch = searchMatch || transaction.transactionId.includes(request.keyword);
