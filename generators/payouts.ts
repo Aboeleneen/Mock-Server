@@ -48,7 +48,7 @@ export interface PayoutsRequest {
     keyword: string;
     sortOrder: "Asc" | "Desc";
     sortBy: "PayoutDateTime" | "NetPayout";
-    searchIn: string[];
+    searchIn: string;
     filters: PayoutsFilters;
 }
 
@@ -113,12 +113,9 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (netAmountFrom) includeItem = includeItem && payout.netPayout >= netAmountFrom;
         if (netAmountTo) includeItem = includeItem && payout.netPayout <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
-        if (includeItem && request.searchIn && request.searchIn.length > 0) {
-            let searchMatch = false;
-            if (request.searchIn?.includes("IBAN")) searchMatch = payout.IBAN.includes(request.keyword);
-            if (request.searchIn?.includes("PayoutId")) searchMatch = searchMatch || payout.referenceId.includes(request.keyword);
-            return searchMatch;
-        }
+
+        if (request.searchIn === "IBAN") includeItem = includeItem && payout.IBAN.includes(request.keyword);
+        if (request.searchIn === "PayoutId") includeItem = includeItem && payout.referenceId.includes(request.keyword);
 
         return includeItem;
     })

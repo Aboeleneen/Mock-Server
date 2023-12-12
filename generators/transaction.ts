@@ -70,7 +70,7 @@ export interface TransactionRequest {
     pageNumber: number;
     pageSize: number;
     keyword: string;
-    searchIn: string[];
+    searchIn: string;
     sortOrder: "Asc" | "Desc";
     sortBy: "TransactionDateTime" | "Amount";
     showTestTranasctions: boolean;
@@ -92,7 +92,7 @@ export const generateTransactions = async () => {
         let amount = faker.number.float({ min: 100, max: 100000 })
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
         transactions.push({
-            transactionId: faker.string.nanoid(faker.helpers.arrayElement([6,8,10,12,14])),
+            transactionId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
             orderId: faker.string.uuid(),
             transactionDateTime: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
             transactionStatus,
@@ -179,13 +179,11 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
-        if (includeItem && request.searchIn && request.searchIn.length > 0) {
-            let searchMatch = false;
-            if (request.searchIn?.includes("PayoutId")) searchMatch = transaction.payoutId.includes(request.keyword);
-            if (request.searchIn?.includes("TerminalId")) searchMatch = searchMatch || transaction.tid.includes(request.keyword);
-            if (request.searchIn?.includes("TransactionId")) searchMatch = searchMatch || transaction.transactionId.includes(request.keyword);
-            return searchMatch;
-        }
+
+        if (request.searchIn === "PayoutId") includeItem = includeItem && transaction.payoutId.includes(request.keyword);
+        if (request.searchIn === "TerminalId") includeItem = includeItem && transaction.tid.includes(request.keyword);
+        if (request.searchIn === "TransactionId") includeItem = includeItem && transaction.transactionId.includes(request.keyword);
+
         return includeItem;
     })
 
