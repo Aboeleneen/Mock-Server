@@ -50,7 +50,7 @@ export interface PayoutsRequest {
     keyword: string;
     sortOrder: "Asc" | "Desc";
     sortBy: "PayoutDateTime" | "NetPayout";
-    searchIn: string[];
+    searchIn: string;
     filters: PayoutsFilters;
 }
 
@@ -65,7 +65,7 @@ export const generatePayouts = () => {
         payouts.push({
             payoutDate: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
             status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
-            referenceId: faker.string.nanoid(12),
+            referenceId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
             IBAN: faker.string.uuid(),
             grossAmount: faker.number.int({ min: 50, max: 5000 }),
             netAmount: faker.number.int({ min: 50, max: 5000 }),
@@ -117,13 +117,10 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (netAmountFrom) includeItem = includeItem && payout.netPayout >= netAmountFrom;
         if (netAmountTo) includeItem = includeItem && payout.netPayout <= netAmountTo;
         if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
-        if (includeItem && request.searchIn && request.searchIn.length > 0) {
-            let searchMatch = false; 
-            if (request.searchIn?.includes("IBAN")) searchMatch = payout.IBAN.includes(request.keyword);
-            if (request.searchIn?.includes("PayoutId")) searchMatch = searchMatch || payout.referenceId.includes(request.keyword);
-            return searchMatch;
-        }
-       
+
+        if (request.searchIn === "IBAN") includeItem = includeItem && payout.IBAN.includes(request.keyword);
+        if (request.searchIn === "PayoutId") includeItem = includeItem && payout.referenceId.includes(request.keyword);
+
         return includeItem;
     })
 
@@ -135,7 +132,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         netAmount += payout.netAmount;
     });
 
-    const returnedPayouts =payoutsInThePage.map(payout=> ({
+    const returnedPayouts = payoutsInThePage.map(payout => ({
         ...payout,
         numberOfTransactions: transactions.filter(transaction => transaction.payoutId === payout.referenceId).length
     }))
