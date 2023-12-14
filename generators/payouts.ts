@@ -18,6 +18,8 @@ export interface Payout {
     currency: string;
     grouped: boolean;
     organizationId?: string;
+    refundAndChargeback: number;
+    settlementFees: number;
 }
 
 export interface PayoutsResponse {
@@ -73,6 +75,8 @@ export const generatePayouts = () => {
             numberOfTransactions: faker.number.int({ min: 10, max: 50 }),
             grouped: true,
             organizationId: faker.helpers.arrayElement(STORE_IDS),
+            refundAndChargeback: faker.number.int({ min: 30, max: 500 }),
+            settlementFees: faker.number.int({ min: 30, max: 500 })
         })
     }
     writeFileSync("data/payouts.json", payouts, 'utf8');
