@@ -180,9 +180,9 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
         if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
 
-        if (request.searchIn === "PayoutId") includeItem = includeItem && transaction.payoutId.includes(request.keyword);
-        if (request.searchIn === "TerminalId") includeItem = includeItem && transaction.tid.includes(request.keyword);
-        if (request.searchIn === "TransactionId") includeItem = includeItem && transaction.transactionId.includes(request.keyword);
+        if (request.keyword && request.searchIn === "PayoutId") includeItem = includeItem && transaction.payoutId.includes(request.keyword);
+        if (request.keyword && request.searchIn === "TerminalId") includeItem = includeItem && transaction.tid.includes(request.keyword);
+        if (request.keyword && request.searchIn === "TransactionId") includeItem = includeItem && transaction.transactionId.includes(request.keyword);
 
         return includeItem;
     })
