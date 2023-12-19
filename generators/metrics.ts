@@ -70,7 +70,7 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
         if (metrics.has(groupingField)) {
             const currentMetric = metrics.get(groupingField)!;
             currentMetric.numberOfTransactions += 1;
-            currentMetric.totalAmount += transaction.grossAmount;
+            currentMetric.totalAmount = faker.helpers.arrayElement([100, 200, 500, 2000, 5000, 10000]);
             metrics.set(groupingField, currentMetric);
         } else {
             const currentMetric: MetricsResponse<string> = {
