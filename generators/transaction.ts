@@ -1,4 +1,4 @@
-import { faker, tr } from "@faker-js/faker";
+import { faker } from "@faker-js/faker";
 import _ from "lodash";
 import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, STORE_IDS, TRANSACTION_STATUSES } from "../constants";
 import { readFile } from "jsonfile";

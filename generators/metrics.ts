@@ -1,5 +1,6 @@
 import { readFile } from "jsonfile";
 import { Transaction } from "./transaction";
+import { faker } from "@faker-js/faker";
 
 export interface MetricsRequest {
     chartCode: string;
@@ -75,7 +76,7 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
             const currentMetric: MetricsResponse<string> = {
                 field: groupingField,
                 numberOfTransactions: 1,
-                totalAmount: transaction.grossAmount
+                totalAmount: faker.helpers.arrayElement([100, 200, 500, 2000, 5000, 10000])
             }
             metrics.set(groupingField, currentMetric);
         }
