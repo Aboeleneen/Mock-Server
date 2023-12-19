@@ -174,7 +174,8 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
         totalBalance,
         unSettledAmount,
         readyToPayAmount,
-        lastUpdate: new Date()
+        lastUpdate: new Date(),
+        currency: "AED"
     }
 
 }
