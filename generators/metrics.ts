@@ -70,13 +70,13 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
         if (metrics.has(groupingField)) {
             const currentMetric = metrics.get(groupingField)!;
             currentMetric.numberOfTransactions += 1;
-            currentMetric.totalAmount = faker.helpers.arrayElement([100, 200, 500, 2000, 5000, 10000]);
+            currentMetric.totalAmount = faker.helpers.arrayElement([100, 200, 500]);
             metrics.set(groupingField, currentMetric);
         } else {
             const currentMetric: MetricsResponse<string> = {
                 field: groupingField,
                 numberOfTransactions: 1,
-                totalAmount: faker.helpers.arrayElement([100, 200, 500, 2000, 5000, 10000])
+                totalAmount: faker.helpers.arrayElement([100, 200, 500])
             }
             metrics.set(groupingField, currentMetric);
         }
