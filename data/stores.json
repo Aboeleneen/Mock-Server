@@ -1,7 +1,7 @@
 [
     {
         "merchantId": "0fd07fc9-0395-4cc0-9ecf-fbc50dac3da3",
-        "leadId": "2bd9834e-6d7c-4f9e-afdc-e5e46db6d789",
+        "businessId": "2bd9834e-6d7c-4f9e-afdc-e5e46db6d789",
         "merchantType": "Type 1",
         "merchantStatus": "Active",
         "tag": "Tag 3",
@@ -29,7 +29,7 @@
     },
     {
         "merchantId": "e07ff2b6-787a-4ea9-af47-1a7fcfb7adf9",
-        "leadId": "51c98dee-ae0e-4526-9419-c7c4810e36b1",
+        "businessId": "51c98dee-ae0e-4526-9419-c7c4810e36b1",
         "merchantType": "Type 1",
         "merchantStatus": "Active",
         "tag": "Tag 2",
@@ -57,7 +57,7 @@
     },
     {
         "merchantId": "96eface5-9b23-4600-9e0c-3b81be38e3d6",
-        "leadId": "541373f0-e7ac-41b3-857f-ccf5752896a1",
+        "businessId": "541373f0-e7ac-41b3-857f-ccf5752896a1",
         "merchantType": "Type 3",
         "merchantStatus": "Active",
         "tag": "Tag 1",
@@ -85,7 +85,7 @@
     },
     {
         "merchantId": "e194fba1-85cd-4b9d-a676-0febacf878d0",
-        "leadId": "ecdb1249-1572-4936-9efd-26e8a3bd9105",
+        "businessId": "ecdb1249-1572-4936-9efd-26e8a3bd9105",
         "merchantType": "Type 1",
         "merchantStatus": "Active",
         "tag": "Tag 2",
@@ -113,7 +113,7 @@
     },
     {
         "merchantId": "c36b51b4-31a5-4186-8762-355ce07cf22b",
-        "leadId": "b53aecf5-b337-4c22-817c-a3f95b2d610b",
+        "businessId": "b53aecf5-b337-4c22-817c-a3f95b2d610b",
         "merchantType": "Type 3",
         "merchantStatus": "Active",
         "tag": "Tag 1",
@@ -141,7 +141,7 @@
     },
     {
         "merchantId": "8a973e79-282c-40f3-a0af-5d30592b222a",
-        "leadId": "fa9f749a-be4d-4d2e-9c79-2188201d3c88",
+        "businessId": "fa9f749a-be4d-4d2e-9c79-2188201d3c88",
         "merchantType": "Type 2",
         "merchantStatus": "Active",
         "tag": "Tag 1",
@@ -169,7 +169,7 @@
     },
     {
         "merchantId": "a5256761-57da-48a0-b79f-7d376c3286f8",
-        "leadId": "42069671-24f1-428b-834f-d6c0c2573175",
+        "businessId": "42069671-24f1-428b-834f-d6c0c2573175",
         "merchantType": "Type 3",
         "merchantStatus": "Inactive",
         "tag": "Tag 1",

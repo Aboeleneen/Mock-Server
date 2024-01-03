@@ -1,7 +1,7 @@
 import express, { Request, Response, Application } from 'express';
 import { TransactionRequest, generateTransactionResponse, generateTransactions } from './generators/transaction';
 import { PayoutsRequest, PayoutsSummaryRequest, generatePayouts, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
-import { generateStores, generateStoresResponse } from './generators/stores';
+import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
 import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';
@@ -38,7 +38,7 @@ app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     res.json(response);
 });
 
-app.get('/merchant/:id/stores', async (req: Request, res: Response) => {
+app.get('/user/:id/entities', async (req: Request, res: Response) => {
     res.json(await generateStoresResponse())
 });
 

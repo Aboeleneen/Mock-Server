@@ -19,13 +19,14 @@ export const DYNAMIC_CURRENCY_COVERSION = ["OriginalCurrency", "ForeignCurrency"
 export const PAYOUTS_STATUSES = ["Pending", "Processed", "Rejected"]
 
 export const STORE_IDS = [
-    '0fd07fc9-0395-4cc0-9ecf-fbc50dac3da3',
-    'e07ff2b6-787a-4ea9-af47-1a7fcfb7adf9',
-    '96eface5-9b23-4600-9e0c-3b81be38e3d6',
-    'e194fba1-85cd-4b9d-a676-0febacf878d0',
-    'c36b51b4-31a5-4186-8762-355ce07cf22b',
-    '8a973e79-282c-40f3-a0af-5d30592b222a',
-    'a5256761-57da-48a0-b79f-7d376c3286f8'
+    "101000000021001", "101000000021002"
+    // '0fd07fc9-0395-4cc0-9ecf-fbc50dac3da3',
+    // 'e07ff2b6-787a-4ea9-af47-1a7fcfb7adf9',
+    // '96eface5-9b23-4600-9e0c-3b81be38e3d6',
+    // 'e194fba1-85cd-4b9d-a676-0febacf878d0',
+    // 'c36b51b4-31a5-4186-8762-355ce07cf22b',
+    // '8a973e79-282c-40f3-a0af-5d30592b222a',
+    // 'a5256761-57da-48a0-b79f-7d376c3286f8'
     // '5d223bb9-e258-4b79-bdc5-aaed56d11b54',
     // '7f7568d4-153a-4f02-920f-068b427bebbe',
     // '4b0cdf70-51e3-45bd-89cc-99227824f738',
