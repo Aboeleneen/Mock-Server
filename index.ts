@@ -1,6 +1,6 @@
 import express, { Request, Response, Application } from 'express';
-import { TransactionRequest, generateTransactionResponse, generateTransactions } from './generators/transaction';
-import { PayoutsRequest, PayoutsSummaryRequest, generatePayouts, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
+import { TransactionRequest, generateTransactionResponse } from './generators/transaction';
+import { PayoutsRequest, PayoutsSummaryRequest, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
 import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
@@ -12,11 +12,11 @@ const app: Application = express();
 app.use(express.json())
 const port = process.env.PORT || 8000;
 
-app.post('/transactions', async (req: Request, res: Response) => {
+app.post('/getTransaction', async (req: Request, res: Response) => {
     res.json(await generateTransactionResponse(req.body as TransactionRequest))
 });
 
-app.post('/payouts', async (req: Request, res: Response) => {
+app.post('/getPayout', async (req: Request, res: Response) => {
     res.json(await generatePayoutsResponse(req.body as PayoutsRequest))
 });
 

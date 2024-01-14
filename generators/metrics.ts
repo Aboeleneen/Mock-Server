@@ -30,13 +30,13 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
     const { startDate, endDate, schemes, statuses, storeIds } = request;
     return transactions.filter(transaction => {
         let includeItem = true;
-        console.log("Comparison Start Date", transaction.transactionDateTime, new Date(startDate), new Date(transaction.transactionDateTime) >= new Date(startDate))
+        console.log("Comparison Start Date", transaction.localDate, new Date(startDate), new Date(transaction.localDate) >= new Date(startDate))
 
-        if (startDate) includeItem &&= new Date(transaction.transactionDateTime) >= new Date(startDate);
-        if (endDate) includeItem &&= new Date(transaction.transactionDateTime) <= new Date(endDate);
-        if (schemes && schemes.length > 0) includeItem &&= schemes.includes(transaction.cardType || '');
-        if (statuses && statuses.length > 0) includeItem &&= statuses.includes(transaction.transactionStatus);
-        if (storeIds && storeIds.length > 0) includeItem &&= storeIds.includes(transaction.organizationId);
+        if (startDate) includeItem &&= new Date(transaction.localDate) >= new Date(startDate);
+        if (endDate) includeItem &&= new Date(transaction.localDate) <= new Date(endDate);
+        if (schemes && schemes.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
+        if (statuses && statuses.length > 0) includeItem &&= statuses.includes(transaction.paymentStatus.toString());
+        if (storeIds && storeIds.length > 0) includeItem &&= storeIds.includes(transaction.merchantId);
 
         return includeItem;
     })
@@ -45,19 +45,19 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
 const groupTransactions = (transactions: Transaction[], chartCode: string) => {
     let getGroupingField;
     if (chartCode === "Date") {
-        getGroupingField = (transaction: Transaction) => new Date(transaction.transactionDateTime).toDateString();
+        getGroupingField = (transaction: Transaction) => new Date(transaction.localDate).toDateString();
     }
 
     else if (chartCode === "Store") {
-        getGroupingField = (transaction: Transaction) => transaction.organizationId;
+        getGroupingField = (transaction: Transaction) => transaction.merchantId;
     }
 
     else if (chartCode === "Scheme") {
-        getGroupingField = (transaction: Transaction) => transaction.cardType!;
+        getGroupingField = (transaction: Transaction) => transaction.cardProduct!;
     }
 
     else {
-        getGroupingField = (transaction: Transaction) => transaction.transactionStatus!;
+        getGroupingField = (transaction: Transaction) => transaction.paymentStatus.toString()!;
     }
 
     return groupTransactionBasedOnField(transactions, getGroupingField);
@@ -70,13 +70,13 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
         if (metrics.has(groupingField)) {
             const currentMetric = metrics.get(groupingField)!;
             currentMetric.numberOfTransactions += 1;
-            currentMetric.totalAmount += transaction.grossAmount;
+            currentMetric.totalAmount += transaction.amount;
             metrics.set(groupingField, currentMetric);
         } else {
             const currentMetric: MetricsResponse<string> = {
                 field: groupingField,
                 numberOfTransactions: 1,
-                totalAmount: transaction.grossAmount
+                totalAmount: transaction.amount
             }
             metrics.set(groupingField, currentMetric);
         }

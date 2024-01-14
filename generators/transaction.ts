@@ -1,123 +1,110 @@
 import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, STORE_IDS, TRANSACTION_STATUSES } from "../constants";
+import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, SCHEME_TYPES, STORE_IDS, TRANSACTION_TYPES } from "../constants";
 import { readFile } from "jsonfile";
 import { paginateList } from "./helpers";
 import { writeFileSync } from 'fs';
 import { Payout } from "./payouts";
+import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
 
 export interface Transaction {
-    transactionId: string;
-    orderId: string;
-    transactionDateTime: Date;
-    transactionStatus: string;
-    tid: string;
-    paymentType: string;
-    grossAmount: number;
-    netAmount: number;
-    financedAmount?: number;
-    cashPayment?: number;
-    originalAmount?: number;
-    originalCurrency?: string;
-    currency: string;
-    paymentMethod: string;
-    maskedCardNumber: string;
-    cardType?: string;
-    merchantReferenceId: string;
+    terminalId: string;
+    merchantId: string;
     payoutId: string;
-    countryCode: string;
-    phoneNumber: string;
-    batchNumber: string;
-    totalRefundAmount?: number;
-    refundStatus?: string;
-    organizationId: string;
-    payByLinkId?: string;
-    payByLinkType?: string;
-    dcc?: string;
     exchangeRate?: number;
+
+    netAmount: number;
+    amount: number;
+    settlementAmount?: number;
+    settlementCurrency?: number;
+    transactionCurrency: number;
+
+    referenceNumber: string;
+    cardProduct: string;
+    paymentStatus: number;
+    localDate: string;
+    localTime: number;
+    commissionAmount?: number;
+    paymentMethod: string;
+    transactionType?: string;
+}
+export interface MetadataDto {
+    page: number;
+    perPage: number;
+    pageCount: number;
+    totalCount: number;
 }
 export interface TransactionResponse {
-    pageNumber: number;
-    pageSize: number;
-    totalPages: number;
-    totalSales: number;
-    totalSearchMatches: number;
-    totalAmount: number;
-    netAmount: number;
-    currency: string;
-    totalProducts: number;
-    organizationIds: string[];
+    metadata: MetadataDto;
     transactions: Transaction[];
 }
 
-export interface TransactionFilters {
-    // payoutId?: string;
-    paymentMethods?: string[];
-    paymentTypes?: string[];
-    statuses?: string[];
-    refundStatus?: string[];
-    netAmountFrom?: number;
-    netAmountTo?: number;
-    from: Date;
-    to: Date;
-    storeIds: string[];
-    businessId?: string;
-    schemes?: string[];
-    dcc?: string[];
-}
-
 export interface TransactionRequest {
+    // Pagination
     pageNumber: number;
     pageSize: number;
-    keyword: string;
-    searchIn: string;
-    sortOrder: "Asc" | "Desc";
-    sortBy: "TransactionDateTime" | "Amount";
-    showTestTranasctions: boolean;
-    filters: TransactionFilters;
+
+    // Sorting
+    orderBy?: string;
+    orderByDirection?: string;
+
+    // Search Fields
+    referenceNumber?: string;
+    payoutId?: string;
+    terminalId: string[];
+
+    // Filters
+    merchantId?: string[];
+    createFromDate?: string;
+    createToDate?: string;
+    amountFrom?: number;
+    amountTo?: number;
+    scheme?: string[];
+    isDcc?: string;
+    paymentMethod?: string;
+    transactionType?: string[];
+    paymentStatus?: number[];
 }
 
 export const generateTransactions = async () => {
     const numberOfItems = 1000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
-    const payoutIds = payouts.map(payout => payout.referenceId);
+    const payoutIds = payouts.map(payout => payout.payoutId);
     let terminalIds = [];
     for (let index = 0; index < 50; index++) {
         terminalIds.push(faker.string.uuid());
     }
     const USD_TO_AED_RATE = 3.67;
     for (let i = 0; i < numberOfItems; i++) {
-        let transactionStatus = faker.helpers.arrayElement(TRANSACTION_STATUSES);
+        let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
         let amount = faker.number.float({ min: 100, max: 100000 })
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
+        const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
         transactions.push({
-            transactionId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
-            orderId: faker.string.uuid(),
-            transactionDateTime: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
-            transactionStatus,
-            tid: faker.helpers.arrayElement(terminalIds),
-            paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
-            grossAmount: amount,
+            referenceNumber: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
+            localDate: dayjs(date).format("DD/MM/YYYY"),
+            localTime: Number(dayjs(date).format("HHmmss")),
+            paymentStatus: transactionStatus,
+            terminalId: faker.helpers.arrayElement(terminalIds),
+            transactionType: faker.helpers.arrayElement(TRANSACTION_TYPES),
+            amount: amount,
             netAmount: faker.number.float({ min: 100, max: 100000 }),
-            financedAmount: faker.number.int({ min: 50, max: 1000 }),
-            cashPayment: faker.number.int({ min: 50, max: 1000 }),
-            originalAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : undefined,
-            originalCurrency: dcc === "ForeignCurrency" ? "USD" : undefined,
-            currency: "AED",
+            commissionAmount: faker.number.float({ min: 100, max: 100000 }),
+            settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : undefined,
+            settlementCurrency: dcc === "ForeignCurrency" ? 840 : undefined,
+            transactionCurrency: 784,
             paymentMethod: faker.helpers.arrayElement(PATMENT_METHODS),
-            maskedCardNumber: faker.finance.creditCardNumber(),
-            cardType: faker.helpers.arrayElement(SCHEME_TYPES),
-            merchantReferenceId: faker.string.uuid(),
+            cardProduct: faker.helpers.arrayElement(SCHEME_TYPES),
             payoutId: faker.helpers.arrayElement(payoutIds),
-            countryCode: faker.location.countryCode("numeric"),
-            phoneNumber: faker.phone.number(),
-            batchNumber: faker.finance.accountNumber(),
-            totalRefundAmount: getRefundAmount(transactionStatus, amount),
-            refundStatus: faker.helpers.arrayElement(TRANSACTION_STATUSES),
-            organizationId: faker.helpers.arrayElement(STORE_IDS),
-            payByLinkId: faker.string.uuid(),
-            dcc,
+            merchantId: faker.helpers.arrayElement(STORE_IDS),
             exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined
         })
     }
@@ -125,92 +112,59 @@ export const generateTransactions = async () => {
     return transactions;
 }
 
-const getRefundAmount = (refundStatus: string, originalAmount: number) => {
-    switch (refundStatus) {
-        case "PartialRefundDone":
-        case "PartialRefundInitiated":
-            return faker.number.float({ min: 100, max: originalAmount })
-        case "ExcessiveRefundDone":
-        case "ExcessiveRefundInitiated":
-            return faker.number.float({ min: 100, max: originalAmount - 100 })
-            break;
-        case "FullRefundDone":
-        case "FullRefundInitiated":
-            return originalAmount;
-        default:
-            break;
-    }
-    return 0;
-}
-
 export const generateTransactionResponse = async (request: TransactionRequest) => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
 
 
     // Sorting
-    if (request.sortBy === "Amount") {
+    if (request.orderBy === "amount") {
         transactions.sort((a: Transaction, b: Transaction) => {
-            if (request.sortOrder === 'Asc') {
-                return a.grossAmount - b.grossAmount;
+            if (request.orderByDirection === 'Asc') {
+                return a.amount - b.amount;
             } else {
-                return b.grossAmount - a.grossAmount;
+                return b.amount - a.amount;
             }
         })
     } else {
         transactions.sort((a: Transaction, b: Transaction) => {
-            if (request.sortOrder === 'Asc') {
-                return new Date(a.transactionDateTime).getTime() - new Date(b.transactionDateTime).getTime();
+            if (request.orderByDirection === 'Asc') {
+                return new Date(a.localDate).getTime() - new Date(b.localDate).getTime();
             } else {
-                return new Date(b.transactionDateTime).getTime() - new Date(a.transactionDateTime).getTime();
+                return new Date(b.localDate).getTime() - new Date(a.localDate).getTime();
             }
         })
     }
     // Filters
     transactions = transactions.filter((transaction: Transaction) => {
-        if (!request.filters) return true;
-        const { statuses, schemes, from, to, netAmountFrom, netAmountTo, storeIds, dcc, paymentMethods } = request.filters;
+        const { paymentStatus, transactionType, scheme, createFromDate, createToDate, amountFrom, amountTo, merchantId, isDcc, paymentMethod, payoutId, terminalId, referenceNumber } = request;
         let includeItem = true;
-        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
-        if (schemes && schemes.length) includeItem = includeItem && schemes.includes(transaction.cardType || '');
-        if (from) includeItem = includeItem && transaction.transactionDateTime >= from;
-        if (to) includeItem = includeItem && transaction.transactionDateTime <= to;
-        if (netAmountFrom) includeItem = includeItem && transaction.grossAmount >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && transaction.grossAmount <= netAmountTo;
-        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
-        if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
-        if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
-
-        if (request.keyword && request.searchIn === "PayoutId") includeItem = includeItem && transaction.payoutId.includes(request.keyword);
-        if (request.keyword && request.searchIn === "TerminalId") includeItem = includeItem && transaction.tid.includes(request.keyword);
-        if (request.keyword && request.searchIn === "TransactionId") includeItem = includeItem && transaction.transactionId.includes(request.keyword);
+        if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
+        if (scheme && scheme.length) includeItem = includeItem && scheme.includes(transaction.cardProduct || '');
+        if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "DD/MM/YYYY").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "DD/MM/YYYY").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        if (amountFrom) includeItem = includeItem && transaction.amount >= amountFrom;
+        if (amountTo) includeItem = includeItem && transaction.amount <= amountTo;
+        if (merchantId && merchantId.length) includeItem = includeItem && merchantId.includes(transaction.merchantId);
+        if (isDcc) includeItem = includeItem && ((isDcc == "AED" && transaction.settlementCurrency == 784) || (isDcc == "others" && transaction.settlementCurrency == 840));
+        if (paymentMethod) includeItem = includeItem && paymentMethod == transaction.paymentMethod;
+        if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '');
+        if (payoutId) includeItem = includeItem && transaction.payoutId == payoutId;
+        if (terminalId && terminalId.length) includeItem = includeItem && terminalId.includes(transaction.terminalId);
+        if (referenceNumber) includeItem = includeItem && transaction.referenceNumber == referenceNumber;
 
         return includeItem;
     })
 
     const transactionsInThePage = paginateList(transactions, request.pageSize, request.pageNumber);
-    const organizationIds: string[] = [];
-    let netAmount = 0;
-    let totalSales = 0;
-    let totalAmount = 0;
-    transactionsInThePage.forEach(transaction => {
-        organizationIds.push(transaction.organizationId!);
-        // netAmount += transaction.netAmount;
-        // totalSales += transaction.grossAmount;
-        // totalAmount += transaction.grossAmount;
-    });
 
     const response: TransactionResponse = {
-        pageNumber: request.pageNumber,
-        pageSize: request.pageSize,
-        totalPages: Math.ceil(transactions.length / request.pageSize),
-        currency: "AED",
+        metadata: {
+            page: request.pageNumber,
+            pageCount: Math.ceil(transactions.length / request.pageSize),
+            perPage: request.pageSize,
+            totalCount: transactions.length
+        },
         transactions: transactionsInThePage,
-        netAmount,
-        organizationIds,
-        totalAmount,
-        totalSales,
-        totalProducts: transactions.length,
-        totalSearchMatches: transactions.length
     }
 
     return response;

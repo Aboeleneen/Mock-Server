@@ -97,5 +97,5 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
         return includeItem;
     }
     )
-    return { totalPages: Math.round(taxInvoicesData.length / request.pageSize), totalInvoices: taxInvoicesData.length, taxInvoices: paginateList(taxInvoicesData, request.pageSize, request.pageNumber) };
+    return { totalPages: Math.round(taxInvoicesData.length / request.pageSize), totalInvoices: taxInvoicesData.length, taxInvoices: paginateList(taxInvoicesData, request.pageSize, request.pageNumber + 1) };
 }
