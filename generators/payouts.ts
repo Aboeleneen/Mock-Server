@@ -63,7 +63,7 @@ export const generatePayouts = () => {
     for (let i = 0; i < numberOfItems; i++) {
         const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
         payouts.push({
-            payoutDate: dayjs(date).format("DD/MM/YYYY"),
+            payoutDate: dayjs(date).format("YYYY-MM-DD"),
             payoutStatus: faker.helpers.arrayElement([-2, -1, 0, 1, 2]),
             payoutId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
             merchantIban: faker.string.uuid(),
@@ -106,8 +106,8 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         const { payoutStatus, createFromDate, createToDate, netPayoutAmountFrom, netPayoutAmountTo, merchantId, iban, payoutId } = request;
         let includeItem = true;
         if (payoutStatus && payoutStatus.length) includeItem = includeItem && payoutStatus.includes(payout.payoutStatus.toString());
-        if (createFromDate) includeItem = includeItem && dayjs(payout.payoutDate, "DD/MM/YYYY").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
-        if (createToDate) includeItem = includeItem && dayjs(payout.payoutDate, "DD/MM/YYYY").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        if (createFromDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (netPayoutAmountFrom) includeItem = includeItem && payout.netAmount >= netPayoutAmountFrom;
         if (netPayoutAmountTo) includeItem = includeItem && payout.netAmount <= netPayoutAmountTo;
         if (merchantId && merchantId.length) includeItem = includeItem && merchantId.includes(payout.merchantId!);

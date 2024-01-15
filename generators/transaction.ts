@@ -90,7 +90,7 @@ export const generateTransactions = async () => {
         const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
         transactions.push({
             referenceNumber: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
-            localDate: dayjs(date).format("DD/MM/YYYY"),
+            localDate: dayjs(date).format("YYYY-MM-DD"),
             localTime: Number(dayjs(date).format("HHmmss")),
             paymentStatus: transactionStatus,
             terminalId: faker.helpers.arrayElement(terminalIds),
@@ -140,8 +140,8 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         let includeItem = true;
         if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
         if (scheme && scheme.length) includeItem = includeItem && scheme.includes(transaction.cardProduct || '');
-        if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "DD/MM/YYYY").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
-        if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "DD/MM/YYYY").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (amountFrom) includeItem = includeItem && transaction.amount >= amountFrom;
         if (amountTo) includeItem = includeItem && transaction.amount <= amountTo;
         if (merchantId && merchantId.length) includeItem = includeItem && merchantId.includes(transaction.merchantId);
