@@ -36,7 +36,7 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
         if (endDate) includeItem &&= new Date(transaction.localDate) <= new Date(endDate);
         if (schemes && schemes.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
         if (statuses && statuses.length > 0) includeItem &&= statuses.includes(transaction.paymentStatus.toString());
-        if (storeIds && storeIds.length > 0) includeItem &&= storeIds.includes(transaction.merchantId);
+        if (storeIds && storeIds.length > 0) transaction.merchantId = faker.helpers.arrayElement(storeIds) // includeItem &&= storeIds.includes(transaction.merchantId);
 
         return includeItem;
     })
