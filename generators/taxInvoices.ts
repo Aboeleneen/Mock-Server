@@ -93,7 +93,7 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
         if (request.invoiceNumber) includeItem = includeItem && invoice.invoiceNumber.includes(request.invoiceNumber || "");
         if (request.taxYear) includeItem = includeItem && new Date(invoice.invoiceDate).getFullYear() === request.taxYear;
         if (request.taxMonth) includeItem = includeItem && (new Date(invoice.invoiceDate).getMonth() + 1) === request.taxMonth;
-        if (request.storeIds && request.storeIds.length) includeItem = includeItem && request.storeIds.includes(invoice.storeId);
+        if (request.storeIds && request.storeIds.length) invoice.storeId = faker.helpers.arrayElement(request.storeIds) // includeItem = includeItem && request.storeIds.includes(invoice.storeId);
         return includeItem;
     }
     )

@@ -110,7 +110,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         if (createToDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (netPayoutAmountFrom) includeItem = includeItem && payout.netAmount >= netPayoutAmountFrom;
         if (netPayoutAmountTo) includeItem = includeItem && payout.netAmount <= netPayoutAmountTo;
-        if (merchantId && merchantId.length) includeItem = includeItem && merchantId.includes(payout.merchantId!);
+        if (merchantId && merchantId.length) payout.merchantId = faker.helpers.arrayElement(merchantId) //includeItem = includeItem && merchantId.includes(payout.merchantId!);
 
         if (iban && iban.length) includeItem = includeItem && iban.includes(payout.merchantIban);
         if (payoutId) includeItem = includeItem && payout.payoutId == payoutId;

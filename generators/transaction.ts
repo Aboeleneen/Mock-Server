@@ -144,7 +144,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (amountFrom) includeItem = includeItem && transaction.amount >= amountFrom;
         if (amountTo) includeItem = includeItem && transaction.amount <= amountTo;
-        if (merchantId && merchantId.length) includeItem = includeItem && merchantId.includes(transaction.merchantId);
+        if (merchantId && merchantId.length) transaction.merchantId = faker.helpers.arrayElement(merchantId)// includeItem = includeItem && merchantId.includes(transaction.merchantId);
         if (isDcc) includeItem = includeItem && ((isDcc == "AED" && transaction.settlementCurrency == 784) || (isDcc == "others" && transaction.settlementCurrency == 840));
         if (paymentMethod) includeItem = includeItem && paymentMethod == transaction.paymentMethod;
         if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '');
