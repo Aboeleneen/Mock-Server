@@ -34,6 +34,27 @@ export interface Transaction {
     commissionAmount?: number;
     paymentMethod: string;
     transactionType?: string;
+
+    GrossAmount: string;
+    LastUpdatedDate?: Date;
+    CustomerEmail: string;
+    PhoneNumber: string;
+    OrderId: string;
+    VAT?: number;
+    CashbackAmount?: number;
+    PaymentLinkNumber: string;
+    CardHolderName: string;
+    MaskedCardNumber: string;
+    CardExpiryDate?: Date;
+    TerminalName: string;
+    TerminalLocation: string;
+    PayoutStatus: string;
+    PayoutSettlementAmount?: number;
+    PayoutPaymentDate?: Date;
+    InstallmentBank: string;
+    InstallmentType: string;
+    Tenor: string;
+    InstallmentDiscountRate?: number;
 }
 export interface MetadataDto {
     page: number;
@@ -105,7 +126,27 @@ export const generateTransactions = async () => {
             cardProduct: faker.helpers.arrayElement(SCHEME_TYPES),
             payoutId: faker.helpers.arrayElement(payoutIds),
             merchantId: faker.helpers.arrayElement(STORE_IDS),
-            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined
+            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined,
+            GrossAmount: faker.commerce.price(),
+            LastUpdatedDate: faker.date.past(),
+            CustomerEmail: faker.internet.email(),
+            PhoneNumber: faker.phone.number(),
+            OrderId: faker.string.uuid(),
+            VAT: parseFloat(faker.finance.amount(0, 20)),
+            CashbackAmount: parseFloat(faker.finance.amount(0, 100)),
+            PaymentLinkNumber: faker.string.uuid(),
+            CardHolderName: faker.person.fullName(),
+            MaskedCardNumber: faker.finance.creditCardNumber(),
+            CardExpiryDate: faker.date.future(),
+            TerminalName: faker.company.name(),
+            TerminalLocation: faker.location.city(),
+            PayoutStatus: faker.helpers.arrayElement(['Pending', 'Completed']),
+            PayoutSettlementAmount: parseFloat(faker.finance.amount(0, 1000)),
+            PayoutPaymentDate: faker.date.future(),
+            InstallmentBank: faker.finance.accountName(),
+            InstallmentType: faker.helpers.arrayElement(['Personal Loan', 'Credit Card']),
+            Tenor: faker.number.int({ min: 6, max: 36 }).toString(),
+            InstallmentDiscountRate: parseFloat(faker.finance.amount(0, 10)),
         })
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');
