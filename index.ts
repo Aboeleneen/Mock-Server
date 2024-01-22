@@ -46,7 +46,7 @@ app.post('/transactionsMetrics', async (req: Request, res: Response) => {
     res.json(await generateTransactionMetrics(req.body as MetricsRequest));
 });
 
-app.post('/generateToken',  (req: Request, res: Response) => {
+app.post('/generateToken', (req: Request, res: Response) => {
     res.json({
         access_token: "dfksaohui23elnccs23",
         expires_in: 23453,
