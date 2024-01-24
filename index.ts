@@ -38,7 +38,7 @@ app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     res.json(response);
 });
 
-app.get('/user/:id/entities', async (req: Request, res: Response) => {
+app.get('/api/v1/user/:id/entities', async (req: Request, res: Response) => {
     res.json(await generateStoresResponse())
 });
 
