@@ -87,9 +87,9 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     if (request.orderBy === "payout amount") {
         payouts.sort((a: Payout, b: Payout) => {
             if (request.orderByDirection === 'Asc') {
-                return a.totalAmount - b.totalAmount;
+                return a.netAmount - b.netAmount;
             } else {
-                return b.totalAmount - a.totalAmount;
+                return b.netAmount - a.netAmount;
             }
         })
     } else {
