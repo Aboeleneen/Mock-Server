@@ -119,14 +119,14 @@ export const generateTransactions = async () => {
             amount: amount,
             netAmount: faker.number.float({ min: 100, max: 100000 }),
             commissionAmount: faker.number.float({ min: 100, max: 100000 }),
-            settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : undefined,
-            settlementCurrency: dcc === "ForeignCurrency" ? 840 : undefined,
+            settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : 784,
+            settlementCurrency: dcc === "ForeignCurrency" ? 840 : 784,
             transactionCurrency: 784,
             paymentMethod: faker.helpers.arrayElement(PATMENT_METHODS),
             cardProduct: faker.helpers.arrayElement(SCHEME_TYPES),
             payoutId: faker.helpers.arrayElement(payoutIds),
             merchantId: faker.helpers.arrayElement(STORE_IDS),
-            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined,
+            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : 1,
             GrossAmount: faker.commerce.price(),
             LastUpdatedDate: faker.date.past(),
             CustomerEmail: faker.internet.email(),
@@ -155,7 +155,7 @@ export const generateTransactions = async () => {
 
 export const generateTransactionResponse = async (request: TransactionRequest) => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
-
+    console.log(request)
 
     // Sorting
     if (request.orderBy === "amount") {
@@ -180,13 +180,19 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         const { paymentStatus, transactionType, scheme, createFromDate, createToDate, amountFrom, amountTo, merchantId, isDcc, paymentMethod, payoutId, terminalId, referenceNumber } = request;
         let includeItem = true;
         if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
-        if (scheme && scheme.length) includeItem = includeItem && scheme.includes(transaction.cardProduct || '');
+        if (scheme && scheme.length) {
+            includeItem = includeItem && (
+                ((scheme.includes("VI") || scheme.includes("VL")) && transaction.cardProduct === "Visa") ||
+                ((scheme.includes("MI") || scheme.includes("ML")) && transaction.cardProduct === "Mastercard") ||
+                (scheme.includes("AX") && transaction.cardProduct === "AMEX")
+            );
+        }
         if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
         if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (amountFrom) includeItem = includeItem && transaction.amount >= amountFrom;
         if (amountTo) includeItem = includeItem && transaction.amount <= amountTo;
         if (merchantId && merchantId.length) transaction.merchantId = faker.helpers.arrayElement(merchantId)// includeItem = includeItem && merchantId.includes(transaction.merchantId);
-        if (isDcc) includeItem = includeItem && ((isDcc == "AED" && transaction.settlementCurrency == 784) || (isDcc == "others" && transaction.settlementCurrency == 840));
+        if (isDcc) includeItem = includeItem && ((isDcc == "AED" && transaction.settlementCurrency == transaction.transactionCurrency) || (isDcc == "Others" && transaction.settlementCurrency != transaction.transactionCurrency));
         if (paymentMethod) includeItem = includeItem && paymentMethod == transaction.paymentMethod;
         if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '');
         if (payoutId) includeItem = includeItem && transaction.payoutId == payoutId;

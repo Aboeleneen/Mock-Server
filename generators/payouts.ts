@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import {  STORE_IDS } from "../constants";
+import { STORE_IDS } from "../constants";
 import { readFile, writeFileSync } from "jsonfile";
 import { paginateList } from "./helpers";
 import { MetadataDto, Transaction } from "./transaction";
@@ -64,7 +64,7 @@ export const generatePayouts = () => {
         const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
         payouts.push({
             payoutDate: dayjs(date).format("YYYY-MM-DD"),
-            payoutStatus: faker.helpers.arrayElement([-2, -1, 0, 1, 2]),
+            payoutStatus: faker.helpers.arrayElement([-2, -1, 0, 1, 2, 3, 4]),
             payoutId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
             merchantIban: faker.string.uuid(),
             totalAmount: faker.number.int({ min: 50, max: 5000 }),
@@ -105,7 +105,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     payouts = payouts.filter((payout: Payout) => {
         const { payoutStatus, createFromDate, createToDate, netPayoutAmountFrom, netPayoutAmountTo, merchantId, iban, payoutId } = request;
         let includeItem = true;
-        if (payoutStatus && payoutStatus.length) includeItem = includeItem && payoutStatus.includes(payout.payoutStatus.toString());
+        if (payoutStatus && payoutStatus.length) includeItem = includeItem && payoutStatus.includes(convertStatusCodeToValue(payout.payoutStatus));
         if (createFromDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
         if (createToDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
         if (netPayoutAmountFrom) includeItem = includeItem && payout.netAmount >= netPayoutAmountFrom;
@@ -167,4 +167,26 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
         currency: "AED"
     }
 
+}
+
+
+function convertStatusCodeToValue(statusCode: number) {
+    switch (statusCode) {
+        case -2:
+            return "Fraudulent";
+        case -1:
+            return "Initiated";
+        case 0:
+            return "Pending";
+        case 1:
+            return "InProgress";
+        case 2:
+            return "Approved";
+        case 3:
+            return "Rejected";
+        case 4:
+            return "Completed";
+        default:
+            return "Unknown";
+    }
 }

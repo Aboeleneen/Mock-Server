@@ -35,7 +35,7 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
         if (startDate) includeItem &&= new Date(transaction.localDate) >= new Date(startDate);
         if (endDate) includeItem &&= new Date(transaction.localDate) <= new Date(endDate);
         if (schemes && schemes.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
-        if (statuses && statuses.length > 0) includeItem &&= statuses.includes(transaction.paymentStatus.toString());
+        if (statuses && statuses.length > 0) includeItem &&= statuses.includes(mapTransactionStatus(transaction.paymentStatus));
         if (storeIds && storeIds.length > 0) transaction.merchantId = faker.helpers.arrayElement(storeIds) // includeItem &&= storeIds.includes(transaction.merchantId);
 
         return includeItem;
@@ -57,7 +57,7 @@ const groupTransactions = (transactions: Transaction[], chartCode: string) => {
     }
 
     else {
-        getGroupingField = (transaction: Transaction) => transaction.paymentStatus.toString()!;
+        getGroupingField = (transaction: Transaction) => mapTransactionStatus(transaction.paymentStatus)!;
     }
 
     return groupTransactionBasedOnField(transactions, getGroupingField);
@@ -82,4 +82,20 @@ const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingFi
         }
     })
     return metrics;
+}
+
+
+function mapTransactionStatus(status: number) {
+    switch (status) {
+        case 0:
+            return "Pending";
+        case 1:
+            return "SubmittedToPayment";
+        case 2:
+            return "Paid";
+        case 3:
+            return "Declined";
+        default:
+            return "";
+    }
 }
