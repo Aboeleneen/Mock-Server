@@ -4,8 +4,8 @@ import { PayoutsRequest, PayoutsSummaryRequest, generatePayoutsResponse, generat
 import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
-import { MetricsRequest, generateTransactionMetrics } from './generators/metrics';
 import { getMonthlyStatementReports } from './generators/monthlyStatementReports';
+import { generateTransactionDayMetrics, generateTransactionMetrics } from './generators/metrics';
 
 
 const app: Application = express();
@@ -42,8 +42,12 @@ app.get('/api/v1/user/:id/entities', async (req: Request, res: Response) => {
     res.json(await generateStoresResponse())
 });
 
-app.post('/transactionsMetrics', async (req: Request, res: Response) => {
+app.post('/getChart', async (req: Request, res: Response) => {
     res.json(await generateTransactionMetrics(req.body as MetricsRequest));
+});
+
+app.post('/getDayGraph', async (req: Request, res: Response) => {
+    res.json(await generateTransactionDayMetrics(req.body as MetricsRequest));
 });
 
 app.post('/generateToken', (req: Request, res: Response) => {

@@ -1,42 +1,47 @@
 import { readFile } from "jsonfile";
 import { Transaction } from "./transaction";
 import { faker } from "@faker-js/faker";
+import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 
-export interface MetricsRequest {
-    chartCode: string;
-    startDate: Date;
-    endDate: Date;
-    schemes: string[];
-    statuses: string[];
-    storeIds: string[];
-}
-export interface MetricsResponse<T> {
-    field: T;
-    totalAmount: number;
-    numberOfTransactions: number;
-}
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
 
-export const generateTransactionMetrics = async (request: MetricsRequest) => {
+export const generateTransactionMetrics = async (request: MetricsRequest): Promise<MetricsResponse> => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
     const filteredTransactions = applyFilters(request, transactions);
     const metrics = groupTransactions(filteredTransactions, request.chartCode)!;
     return {
-        metrics: Array.from(metrics).map(([_, value]) => value),
+        chart: Array.from(metrics).map(([_, value]) => value),
     }
 }
 
+export const generateTransactionDayMetrics = async (request: MetricsRequest): Promise<DayMetricsResponse> => {
+    let transactions: Transaction[] = await readFile('./data/transactions.json');
+    const filteredTransactions = applyFilters(request, transactions);
+    const metrics = groupTransactions(filteredTransactions, "Date")!;
+    return {
+        dayGraph: Array.from(metrics).map(([_, value]) => ({
+            transactionsAmount: value.metric2,
+            transactionsCount: value.metric1,
+            averageTransactionAmount: value.metric2 / value.metric1,
+            date: value.metric5
+        })),
+    }
+}
 
 const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
-    const { startDate, endDate, schemes, statuses, storeIds } = request;
+    const { merchantId, createFromDate, createToDate, paymentStatus, scheme } = request;
     return transactions.filter(transaction => {
         let includeItem = true;
-        console.log("Comparison Start Date", transaction.localDate, new Date(startDate), new Date(transaction.localDate) >= new Date(startDate))
-
-        if (startDate) includeItem &&= new Date(transaction.localDate) >= new Date(startDate);
-        if (endDate) includeItem &&= new Date(transaction.localDate) <= new Date(endDate);
-        if (schemes && schemes.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
-        if (statuses && statuses.length > 0) includeItem &&= statuses.includes(mapTransactionStatus(transaction.paymentStatus));
-        if (storeIds && storeIds.length > 0) transaction.merchantId = faker.helpers.arrayElement(storeIds) // includeItem &&= storeIds.includes(transaction.merchantId);
+        if (createFromDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        // if (scheme && scheme.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
+        if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
+        if (merchantId && merchantId.length > 0) transaction.merchantId = faker.helpers.arrayElement(merchantId) // includeItem &&= storeIds.includes(transaction.merchantId);
 
         return includeItem;
     })
@@ -45,38 +50,38 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
 const groupTransactions = (transactions: Transaction[], chartCode: string) => {
     let getGroupingField;
     if (chartCode === "Date") {
-        getGroupingField = (transaction: Transaction) => new Date(transaction.localDate).toDateString();
+        getGroupingField = (transaction: Transaction) => transaction.localDate;
     }
-
-    else if (chartCode === "Store") {
+    else if (chartCode === "ChartCode1") { // store
         getGroupingField = (transaction: Transaction) => transaction.merchantId;
     }
-
-    else if (chartCode === "Scheme") {
+    else if (chartCode === "ChartCode3") { // scheme
         getGroupingField = (transaction: Transaction) => transaction.cardProduct!;
     }
-
-    else {
-        getGroupingField = (transaction: Transaction) => mapTransactionStatus(transaction.paymentStatus)!;
+    else if (chartCode === "ChartCode2") { // type
+        getGroupingField = (transaction: Transaction) => transaction.transactionType!;
+    } else {
+        return;
     }
 
-    return groupTransactionBasedOnField(transactions, getGroupingField);
+    return groupTransactionBasedOnField(transactions, getGroupingField!);
 };
 
 const groupTransactionBasedOnField = (transactions: Transaction[], getGroupingField: (transaction: Transaction) => string) => {
-    const metrics = new Map<string, MetricsResponse<string>>();
+    const metrics = new Map<string, MetricsDto>();
     transactions.forEach(transaction => {
         const groupingField = getGroupingField(transaction)
         if (metrics.has(groupingField)) {
             const currentMetric = metrics.get(groupingField)!;
-            currentMetric.numberOfTransactions += 1;
-            currentMetric.totalAmount += transaction.amount;
+            currentMetric.metric1 += 1;
+            currentMetric.metric2 += transaction.amount;
+            currentMetric.metric5 = groupingField;
             metrics.set(groupingField, currentMetric);
         } else {
-            const currentMetric: MetricsResponse<string> = {
-                field: groupingField,
-                numberOfTransactions: 1,
-                totalAmount: transaction.amount
+            const currentMetric: MetricsDto = {
+                metric5: groupingField,
+                metric1: 1,
+                metric2: transaction.amount
             }
             metrics.set(groupingField, currentMetric);
         }
