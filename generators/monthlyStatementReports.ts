@@ -53,6 +53,6 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
             pageCount: Math.round(monthlyStatementReports.length / request.pageSize),
             totalCount: monthlyStatementReports.length
         },
-        msr: paginateList(monthlyStatementReports, request.pageSize, request.pageNumber + 1)
+        msr: paginateList(monthlyStatementReports, request.pageSize, request.pageNumber)
     };
 }
