@@ -56,7 +56,12 @@ const groupTransactions = (transactions: Transaction[], chartCode: string) => {
         getGroupingField = (transaction: Transaction) => transaction.merchantId;
     }
     else if (chartCode === "ChartCode3") { // scheme
-        getGroupingField = (transaction: Transaction) => transaction.cardProduct!;
+        getGroupingField = (transaction: Transaction) => {
+            if (transaction.cardProduct === "Mastercard") return "MI";
+            else if (transaction.cardProduct === "AMEX") return "AX";
+            else if (transaction.cardProduct === "Visa") return "VI";
+            else return transaction.cardProduct!
+        };
     }
     else if (chartCode === "ChartCode2") { // type
         getGroupingField = (transaction: Transaction) => transaction.transactionType!;
