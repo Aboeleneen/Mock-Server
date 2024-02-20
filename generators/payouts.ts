@@ -120,14 +120,6 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
 
     const payoutsInThePage: Payout[] = paginateList(payouts, request.pageSize, request.pageNumber);
 
-
-    const returnedPayouts = payoutsInThePage.map(payout => ({
-        ...payout,
-        transactionsNumber: transactions.filter(transaction => transaction.payoutId === payout.payoutId).length
-    }))
-
-
-
     const response: PayoutsResponse = {
 
         metaData: {
@@ -136,7 +128,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
             pageCount: Math.ceil(payouts.length / request.pageSize),
             totalCount: payouts.length
         },
-        payouts: returnedPayouts,
+        payouts: payoutsInThePage,
     }
 
     return response;
