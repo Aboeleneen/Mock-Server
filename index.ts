@@ -46,6 +46,10 @@ app.post('/getChart', async (req: Request, res: Response) => {
     res.json(await generateTransactionMetrics(req.body as MetricsRequest));
 });
 
+app.post('/transactionsMetrics', async (req: Request, res: Response) => {
+    res.json(await generateTransactionMetrics(req.body as MetricsRequest));
+});
+
 app.post('/getDayGraph', async (req: Request, res: Response) => {
     res.json(await generateTransactionDayMetrics(req.body as MetricsRequest));
 });
