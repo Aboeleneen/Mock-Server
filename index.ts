@@ -71,7 +71,6 @@ app.get('/content', (req, res) => {
         UpdateDate: "2024-02-25",
         Properties: {
             ReferenceIdCol: "New Reference ID",
-            DateTimeCol: "New Date and time",
             TerminalIdCol: "Terminal ID",
             SchemeCol: "Scheme",
             AmountCol: "Amount",
