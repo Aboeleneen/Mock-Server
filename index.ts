@@ -61,6 +61,38 @@ app.post('/generateToken', (req: Request, res: Response) => {
     });
 });
 
+app.get('/content', (req, res) => {
+    // Sample CMS transaction response
+    const cmsTransactionResponse = {
+        Id: "1",
+        ContentType: "Some Content Type",
+        Name: "Some Name",
+        CreateDate: "2024-02-25",
+        UpdateDate: "2024-02-25",
+        Properties: {
+            ReferenceIdCol: "New Reference ID",
+            DateTimeCol: "New Date and time",
+            TerminalIdCol: "Terminal ID",
+            SchemeCol: "Scheme",
+            AmountCol: "Amount",
+            TagsCol: "Tags",
+            TypeCol: "Type",
+            StatusCol: "Status",
+            PayoutIdCol: "Payout ID",
+            StoreCol: "Store",
+            NetAmountCol: "Net amount",
+            ExchangeRateCol: "Exchange rate",
+            OriginalAmountCol: "Original amount",
+            FilterByText: "Filter by",
+            PaymentMethodText: "Payment method"
+            // Include other properties from CmsTransactionProperties as needed
+        }
+    };
+
+    // Return the CMS transaction response as JSON
+    res.json(cmsTransactionResponse);
+});
+
 app.listen(port, () => {
     console.log(`Server is Fire at http://localhost:${port}`);
 });
