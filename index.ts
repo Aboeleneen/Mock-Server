@@ -82,7 +82,7 @@ app.get('/content', (req, res) => {
             NetAmountCol: "Net amount",
             ExchangeRateCol: "Exchange rate",
             OriginalAmountCol: "Original amount",
-            FilterByText: "Filter by",
+            FilterByText: "Filter by2",
             PaymentMethodText: "Payment method"
             // Include other properties from CmsTransactionProperties as needed
         }
