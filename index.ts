@@ -101,7 +101,6 @@ app.get('/payoutContent', (req, res) => {
         CreateDate: "2024-02-25",
         UpdateDate: "2024-02-25",
         Properties: {
-            DateTimeCol: "Date and time",
             PayoutIdCol: "Payout ID",
             IbanCol: "IBAN",
             NumberOfTransactionsCol: "Number of transactions",
@@ -112,7 +111,7 @@ app.get('/payoutContent', (req, res) => {
             FeesDeductedCol: "Fees deducted",
             RefundAndChargebackCol: "Refund and chargeback",
             FilterByText: "Filter by",
-            PaymentMethodText: "Payment method"
+            PaymentMethodText: "Payment method2"
             // Include other properties from CmsPayoutProperties as needed
         }
     };
