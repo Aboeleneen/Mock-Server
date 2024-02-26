@@ -61,7 +61,7 @@ app.post('/generateToken', (req: Request, res: Response) => {
     });
 });
 
-app.get('/content', (req, res) => {
+app.get('/transactionContent', (req, res) => {
     // Sample CMS transaction response
     const cmsTransactionResponse = {
         Id: "1",
@@ -90,6 +90,35 @@ app.get('/content', (req, res) => {
 
     // Return the CMS transaction response as JSON
     res.json(cmsTransactionResponse);
+});
+
+app.get('/payoutContent', (req, res) => {
+    // Sample CMS payout response
+    const cmsPayoutResponse = {
+        Id: "1",
+        ContentType: "Some Content Type",
+        Name: "Some Name",
+        CreateDate: "2024-02-25",
+        UpdateDate: "2024-02-25",
+        Properties: {
+            DateTimeCol: "Date and time",
+            PayoutIdCol: "Payout ID",
+            IbanCol: "IBAN",
+            NumberOfTransactionsCol: "Number of transactions",
+            NetPayoutCol: "Net payout",
+            StatusCol: "Status",
+            GrossAmountCol: "Gross amount",
+            NetAmountCol: "Net amount",
+            FeesDeductedCol: "Fees deducted",
+            RefundAndChargebackCol: "Refund and chargeback",
+            FilterByText: "Filter by",
+            PaymentMethodText: "Payment method"
+            // Include other properties from CmsPayoutProperties as needed
+        }
+    };
+
+    // Return the CMS payout response as JSON
+    res.json(cmsPayoutResponse);
 });
 
 app.listen(port, () => {
