@@ -107,7 +107,7 @@ app.get('/payoutContent', (req, res) => {
             NetPayoutCol: "Net payout",
             StatusCol: "Status",
             GrossAmountCol: "Gross amount",
-            NetAmountCol: "Net amount",
+            NetAmountCol: "Net amount2",
             FeesDeductedCol: "Fees deducted",
             RefundAndChargebackCol: "Refund and chargeback",
             FilterByText: "Filter by",
