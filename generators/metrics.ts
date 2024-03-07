@@ -34,15 +34,20 @@ export const generateTransactionDayMetrics = async (request: MetricsRequest): Pr
 }
 
 const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
-    const { merchantId, createFromDate, createToDate, paymentStatus, scheme } = request;
+    const { merchantId, createFromDate, createToDate, paymentStatus, scheme, transactionType } = request;
     return transactions.filter(transaction => {
         let includeItem = true;
         if (createFromDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
         if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
-        // if (scheme && scheme.length > 0) includeItem &&= schemes.includes(transaction.cardProduct || '');
-        if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
+        if (scheme && scheme.length) {
+            includeItem = includeItem && (
+                ((scheme.includes("VI") || scheme.includes("VL")) && transaction.cardProduct === "Visa") ||
+                ((scheme.includes("MI") || scheme.includes("ML")) && transaction.cardProduct === "Mastercard") ||
+                (scheme.includes("AX") && transaction.cardProduct === "AMEX")
+            );
+        } if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
         if (merchantId && merchantId.length > 0) transaction.merchantId = faker.helpers.arrayElement(merchantId) // includeItem &&= storeIds.includes(transaction.merchantId);
-
+        if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '')
         return includeItem;
     })
 }
