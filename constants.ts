@@ -1,18 +1,18 @@
 export const TRANSACTION_STATUSES = [
-    "Authorized", "Captured", "Voided", "InProgress", "Paid", "Reversed", "PreAuthorized",
+    "Pending", "Captured", "Voided", "InProgress", "Paid", "Reversed", "PreAuthorized",
     "Pending", "ForcedReconciliation", "SettledToGeidea", "ReconciliationDone", "ReconciliationInitiated",
     "SettledToMerchant", "ManuallyPaid", "PaidByBnpl", "PaidInAdvance", "PaidToPaymentInAdvance",
     "PartialRefundDone", "PartialRefundInitiated", "ExcessiveRefundDone", "ExcessiveRefundInitiated",
     "FullRefundDone", "FullRefundInitiated", "Failed", "Expired", "Reversed", "RolledBack", "Purchased"
 ];
 
-export const PAYMENT_TYPES = ["TERMINAL", "WEB", "Online"];
+export const TRANSACTION_TYPES = ["Purchase", "Purchase Reversal", "Refund", "Refund Reversal", "Auth Purchase"];
 
 export const CURRENCIES = ["USD", "AED"]
 
 export const PATMENT_METHODS = ["Online", "Terminal"]
 
-export const SCHEME_TYPES = ["Visa", "Mastercard", "AMEX", "JCB", "Diners", "CUP", "Mercury"]
+export const SCHEME_TYPES = ["Visa", "Mastercard", "AMEX"]
 
 export const DYNAMIC_CURRENCY_COVERSION = ["OriginalCurrency", "ForeignCurrency"]
 
