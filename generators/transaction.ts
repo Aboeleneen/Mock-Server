@@ -4,95 +4,16 @@ import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, SCHEME_TYPES, STORE_IDS, T
 import { readFile } from "jsonfile";
 import { paginateList } from "./helpers";
 import { writeFileSync } from 'fs';
-import { Payout } from "./payouts";
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { Transaction, TransactionRequest, TransactionResponse } from "../interfaces/transaction";
+import { Payout } from "../interfaces/payout";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
-
-export interface Transaction {
-    terminalId: string;
-    merchantId: string;
-    payoutId: string;
-    exchangeRate?: number;
-
-    netAmount: number;
-    amount: number;
-    settlementAmount?: number;
-    settlementCurrency?: number;
-    transactionCurrency: number;
-
-    referenceNumber: string;
-    cardProduct: string;
-    paymentStatus: number;
-    localDate: string;
-    localTime: number;
-    commissionAmount?: number;
-    paymentMethod: string;
-    transactionType?: string;
-
-    GrossAmount: string;
-    LastUpdatedDate?: Date;
-    CustomerEmail: string;
-    PhoneNumber: string;
-    OrderId: string;
-    VAT?: number;
-    CashbackAmount?: number;
-    PaymentLinkNumber: string;
-    CardHolderName: string;
-    MaskedCardNumber: string;
-    CardExpiryDate?: Date;
-    TerminalName: string;
-    TerminalLocation: string;
-    PayoutStatus: string;
-    PayoutSettlementAmount?: number;
-    PayoutPaymentDate?: Date;
-    InstallmentBank: string;
-    InstallmentType: string;
-    Tenor: string;
-    InstallmentDiscountRate?: number;
-}
-export interface MetadataDto {
-    page: number;
-    perPage: number;
-    pageCount: number;
-    totalCount: number;
-}
-export interface TransactionResponse {
-    metadata: MetadataDto;
-    transactions: Transaction[];
-}
-
-export interface TransactionRequest {
-    // Pagination
-    pageNumber: number;
-    pageSize: number;
-
-    // Sorting
-    orderBy?: string;
-    orderByDirection?: string;
-
-    // Search Fields
-    referenceNumber?: string;
-    payoutId?: string;
-    terminalId: string[];
-
-    // Filters
-    merchantId?: string[];
-    createFromDate?: string;
-    createToDate?: string;
-    amountFrom?: number;
-    amountTo?: number;
-    scheme?: string[];
-    isDcc?: string;
-    paymentMethod?: string;
-    transactionType?: string[];
-    paymentStatus?: number[];
-}
 
 export const generateTransactions = async () => {
     const numberOfItems = 1000;
@@ -155,7 +76,6 @@ export const generateTransactions = async () => {
 
 export const generateTransactionResponse = async (request: TransactionRequest) => {
     let transactions: Transaction[] = await readFile('./data/transactions.json');
-    console.log(request)
 
     // Sorting
     if (request.orderBy === "amount") {

@@ -3,59 +3,16 @@ import _ from "lodash";
 import { STORE_IDS } from "../constants";
 import { readFile, writeFileSync } from "jsonfile";
 import { paginateList } from "./helpers";
-import { MetadataDto, Transaction } from "./transaction";
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { Payout, PayoutsRequest, PayoutsResponse, PayoutsSummaryRequest } from "../interfaces/payout";
+import { Transaction } from "../interfaces/transaction";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
-
-export interface PayoutsResponse {
-    metaData: MetadataDto;
-    payouts: Payout[];
-}
-
-export interface PayoutsRequest {
-    // Pagination
-    pageNumber: number;
-    pageSize: number;
-
-    // Sorting
-    orderBy: string;
-    orderByDirection: string;
-
-    // Fields
-    createFromDate?: string;
-    createToDate?: string;
-    merchantId?: string[];
-    payoutStatus?: string[];
-    netPayoutAmountFrom?: number;
-    netPayoutAmountTo?: number;
-
-    // Search Fields
-    iban?: string[];
-    payoutId?: string;
-}
-
-export interface Payout {
-    payoutId: string;
-    payoutDate: string;
-    totalAmount: number;
-    netAmount: number;
-    totalFeeAmount: number;
-    payoutCurrency: string;
-    payoutStatus: number;
-    merchantId: string;
-    merchantIban: string;
-    transactionsNumber: number;
-}
-
-export interface PayoutsSummaryRequest {
-    storeIds: string[];
-}
 
 export const generatePayouts = () => {
     const numberOfItems = 1000;
@@ -134,7 +91,6 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
     return response;
 }
 
-
 export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequest) => {
     const { storeIds } = request;
     let payouts = await readFile('./data/payouts.json');
@@ -160,7 +116,6 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
     }
 
 }
-
 
 function convertStatusCodeToValue(statusCode: number) {
     switch (statusCode) {
