@@ -24,11 +24,11 @@ app.post('/payoutsSummary', async (req: Request, res: Response) => {
     res.json(await generatePayoutsSummaryResponse(req.body as PayoutsSummaryRequest));
 })
 
-app.post('/getVatSummary', async (req: Request, res: Response) => {
+app.post(['/getVatSummary', 'tax-invoices'], async (req: Request, res: Response) => {
     res.json(await getTaxInvoices(req.body));
 });
 
-app.post("/getMsrSummary", async (req: Request, res: Response) => {
+app.post(["/getMsrSummary", 'monthly-statement-reports'], async (req: Request, res: Response) => {
     res.json(await getMonthlyStatementReports(req.body));
 })
 app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
