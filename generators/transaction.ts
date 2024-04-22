@@ -68,6 +68,7 @@ export const generateTransactions = async () => {
             InstallmentType: faker.helpers.arrayElement(['Personal Loan', 'Credit Card']),
             Tenor: faker.number.int({ min: 6, max: 36 }).toString(),
             InstallmentDiscountRate: parseFloat(faker.finance.amount(0, 10)),
+            authorizationCode: faker.string.sample()
         })
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');

@@ -1,4 +1,4 @@
-interface MetricsRequest {
+export interface MetricsRequest {
     merchantId: string[];
     transactionType?: string[];
     paymentStatus?: number[];
@@ -8,15 +8,15 @@ interface MetricsRequest {
     scheme: string[];
 }
 
-interface MetricsResponse {
+export interface MetricsResponse {
     chart: MetricsDto[];
 }
 
-interface DayMetricsResponse {
+export interface DayMetricsResponse {
     dayGraph: DayMetricsDto[];
 }
 
-interface MetricsDto {
+export interface MetricsDto {
     metric1: number;
     metric2: number;
     metric3?: number;
@@ -25,7 +25,7 @@ interface MetricsDto {
     metric6?: string;
 }
 
-interface DayMetricsDto{
+export interface DayMetricsDto{
     transactionsCount: number;
     transactionsAmount: number;
     averageTransactionAmount: number;

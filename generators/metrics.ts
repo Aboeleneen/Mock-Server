@@ -1,10 +1,11 @@
 import { readFile } from "jsonfile";
-import { Transaction } from "./transaction";
 import { faker } from "@faker-js/faker";
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { DayMetricsResponse, MetricsDto, MetricsRequest, MetricsResponse } from "../interfaces/metrics";
+import { Transaction } from "../interfaces/transaction";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)

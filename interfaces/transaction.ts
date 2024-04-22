@@ -41,6 +41,7 @@ export interface Transaction {
     InstallmentType: string;
     Tenor: string;
     InstallmentDiscountRate?: number;
+    authorizationCode?: string;
 }
 
 export interface TransactionResponse {

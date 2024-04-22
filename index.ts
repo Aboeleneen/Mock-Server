@@ -1,11 +1,14 @@
 import express, { Request, Response, Application } from 'express';
-import { TransactionRequest, generateTransactionResponse } from './generators/transaction';
-import { PayoutsRequest, PayoutsSummaryRequest, generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
 import { generateStoresResponse } from './generators/stores';
 import { getTaxInvoices } from './generators/taxInvoices';
 import { TAX_AVAILABLE_YEARS } from './constants';
 import { getMonthlyStatementReports } from './generators/monthlyStatementReports';
 import { generateTransactionDayMetrics, generateTransactionMetrics } from './generators/metrics';
+import { MetricsRequest } from './interfaces/metrics';
+import { generateTransactionResponse } from './generators/transaction';
+import { generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
+import { PayoutsRequest, PayoutsSummaryRequest } from './interfaces/payout';
+import { TransactionRequest } from './interfaces/transaction';
 
 
 const app: Application = express();
@@ -24,13 +27,22 @@ app.post('/payoutsSummary', async (req: Request, res: Response) => {
     res.json(await generatePayoutsSummaryResponse(req.body as PayoutsSummaryRequest));
 })
 
-app.post(['/getVatSummary', '/tax-invoices'], async (req: Request, res: Response) => {
+app.post('/getVatSummary', async (req: Request, res: Response) => {
     res.json(await getTaxInvoices(req.body));
 });
 
-app.post(["/getMsrSummary", '/monthly-statement-reports'], async (req: Request, res: Response) => {
+app.post('/tax-invoices', async (req: Request, res: Response) => {
+    res.json(await getTaxInvoices(req.body));
+});
+
+app.post("/getMsrSummary", async (req: Request, res: Response) => {
     res.json(await getMonthlyStatementReports(req.body));
 })
+
+app.post('/monthly-statement-reports', async (req: Request, res: Response) => {
+    res.json(await getMonthlyStatementReports(req.body));
+})
+
 app.get('/tax-available-years/:merchantId', (req: Request, res: Response) => {
     const response = {
         years: TAX_AVAILABLE_YEARS
