@@ -16,7 +16,7 @@ dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
 
 export const generateTransactions = async () => {
-    const numberOfItems = 1000;
+    const numberOfItems = 10000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
     const payoutIds = payouts.map(payout => payout.payoutId);
@@ -29,7 +29,7 @@ export const generateTransactions = async () => {
         let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
         let amount = faker.number.float({ min: 100, max: 100000 })
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
-        const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
+        const date = faker.date.between({ from: "2024-04-01", to: "2024-10-30" });
         transactions.push({
             referenceNumber: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
             localDate: dayjs(date).format("YYYY-MM-DD"),

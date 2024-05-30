@@ -18,7 +18,7 @@ export const generatePayouts = () => {
     const numberOfItems = 1000;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
-        const date = faker.date.between({ from: "2023-11-01", to: "2024-01-30" });
+        const date = faker.date.between({  from: "2024-04-01", to: "2024-10-30" });
         payouts.push({
             payoutDate: dayjs(date).format("YYYY-MM-DD"),
             payoutStatus: faker.helpers.arrayElement([-2, -1, 0, 1, 2, 3, 4]),

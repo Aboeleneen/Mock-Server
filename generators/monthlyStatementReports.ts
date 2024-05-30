@@ -12,7 +12,7 @@ export const generateMonthlyStatementReports = () => {
     const monthlyStatementReports: MonthlyStatementReport[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         let month = faker.number.int({ min: 1, max: 12 });
-        let year = faker.number.int({ min: 2022, max: 2023 });
+        let year = faker.number.int({ min: 2023, max: 2024 });
         monthlyStatementReports.push({
             merchantId: faker.helpers.arrayElement(STORE_IDS),
             reportingMonthYear: dayjs(`${year}-${month}-4`).format("MMYYYY"),
