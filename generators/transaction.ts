@@ -27,7 +27,7 @@ export const generateTransactions = async () => {
     const USD_TO_AED_RATE = 3.67;
     for (let i = 0; i < numberOfItems; i++) {
         let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
-        let amount = faker.number.float({ min: 100, max: 100000 })
+        let amount = faker.number.int({ min: 1, max: 100 })
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
         const date = faker.date.between({ from: "2024-04-01", to: "2024-10-30" });
         transactions.push({
@@ -38,8 +38,8 @@ export const generateTransactions = async () => {
             terminalId: faker.helpers.arrayElement(terminalIds),
             transactionType: faker.helpers.arrayElement(TRANSACTION_TYPES),
             amount: amount,
-            netAmount: faker.number.float({ min: 100, max: 100000 }),
-            commissionAmount: faker.number.float({ min: 100, max: 100000 }),
+            netAmount: faker.number.int({ min: 1, max: 100 }),
+            commissionAmount: faker.number.int({ min: 1, max: 100 }),
             settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : 784,
             settlementCurrency: dcc === "ForeignCurrency" ? 840 : 784,
             transactionCurrency: 784,
