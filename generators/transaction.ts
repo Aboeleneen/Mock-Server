@@ -16,7 +16,7 @@ dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
 
 export const generateTransactions = async () => {
-    const numberOfItems = 10000;
+    const numberOfItems = 1000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
     const payoutIds = payouts.map(payout => payout.payoutId);
