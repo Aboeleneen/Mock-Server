@@ -16,7 +16,7 @@ dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
 
 export const generateTransactions = async () => {
-    const numberOfItems = 1000;
+    const numberOfItems = 10000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
     const payoutIds = payouts.map(payout => payout.payoutId);
@@ -25,9 +25,10 @@ export const generateTransactions = async () => {
         terminalIds.push(faker.string.uuid());
     }
     const USD_TO_AED_RATE = 3.67;
+    const ammountRange = { min: 1, max: 10000 };
     for (let i = 0; i < numberOfItems; i++) {
         let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
-        let amount = faker.number.int({ min: 1, max: 100 })
+        let amount = faker.number.int(ammountRange)
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
         const date = faker.date.between({ from: "2024-04-01", to: "2024-10-30" });
         transactions.push({
@@ -38,8 +39,8 @@ export const generateTransactions = async () => {
             terminalId: faker.helpers.arrayElement(terminalIds),
             transactionType: faker.helpers.arrayElement(TRANSACTION_TYPES),
             amount: amount,
-            netAmount: faker.number.int({ min: 1, max: 100 }),
-            commissionAmount: faker.number.int({ min: 1, max: 100 }),
+            netAmount: faker.number.int(ammountRange),
+            commissionAmount: faker.number.int(ammountRange),
             settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : 784,
             settlementCurrency: dcc === "ForeignCurrency" ? 840 : 784,
             transactionCurrency: 784,
