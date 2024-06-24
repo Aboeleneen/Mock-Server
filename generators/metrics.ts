@@ -47,7 +47,7 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
                 (scheme.includes("AX") && transaction.cardProduct === "AMEX")
             );
         } if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
-        if (merchantId && merchantId.length > 0) transaction.merchantId = faker.helpers.arrayElement(merchantId) // includeItem &&= storeIds.includes(transaction.merchantId);
+        if (merchantId && merchantId.length > 0) includeItem = includeItem && merchantId.includes(transaction.merchantId); //transaction.merchantId = faker.helpers.arrayElement(merchantId) 
         if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '')
         return includeItem;
     })
