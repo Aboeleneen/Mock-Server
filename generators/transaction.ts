@@ -25,7 +25,7 @@ export const generateTransactions = async () => {
         terminalIds.push(faker.string.uuid());
     }
     const USD_TO_AED_RATE = 3.67;
-    const ammountRange = { min: 1, max: 10000 };
+    const ammountRange = { min: 1, max: 100000 };
     for (let i = 0; i < numberOfItems; i++) {
         let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
         let amount = faker.number.int(ammountRange)
