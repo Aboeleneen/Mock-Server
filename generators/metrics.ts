@@ -1,19 +1,17 @@
-import { readFile } from "jsonfile";
-import { faker } from "@faker-js/faker";
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import { DayMetricsResponse, MetricsDto, MetricsRequest, MetricsResponse } from "../interfaces/metrics";
 import { Transaction } from "../interfaces/transaction";
+import { TRANSACTIONS } from "./data";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
 dayjs.extend(isSameOrAfter)
 
 export const generateTransactionMetrics = async (request: MetricsRequest): Promise<MetricsResponse> => {
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-    const filteredTransactions = applyFilters(request, transactions);
+    const filteredTransactions = applyFilters(request, TRANSACTIONS);
     const metrics = groupTransactions(filteredTransactions, request.chartCode)!;
     return {
         chart: Array.from(metrics).map(([_, value]) => value),
@@ -21,8 +19,7 @@ export const generateTransactionMetrics = async (request: MetricsRequest): Promi
 }
 
 export const generateTransactionDayMetrics = async (request: MetricsRequest): Promise<DayMetricsResponse> => {
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-    const filteredTransactions = applyFilters(request, transactions);
+    const filteredTransactions = applyFilters(request, TRANSACTIONS);
     const metrics = groupTransactions(filteredTransactions, "Date")!;
     return {
         dayGraph: Array.from(metrics).map(([_, value]) => ({

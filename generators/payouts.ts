@@ -9,6 +9,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import { Payout, PayoutsRequest, PayoutsResponse, PayoutsSummaryRequest } from "../interfaces/payout";
 import { Transaction } from "../interfaces/transaction";
+import { PAYOUTS } from "./data";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
@@ -37,12 +38,9 @@ export const generatePayouts = () => {
 }
 
 export const generatePayoutsResponse = async (request: PayoutsRequest) => {
-    let payouts = await readFile('./data/payouts.json');
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-
     // Sorting
     if (request.orderBy === "payout amount") {
-        payouts.sort((a: Payout, b: Payout) => {
+        PAYOUTS.sort((a: Payout, b: Payout) => {
             if (request.orderByDirection === 'Asc') {
                 return a.netAmount - b.netAmount;
             } else {
@@ -50,7 +48,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
             }
         })
     } else {
-        payouts.sort((a: Payout, b: Payout) => {
+        PAYOUTS.sort((a: Payout, b: Payout) => {
             if (request.orderByDirection === 'Asc') {
                 return new Date(a.payoutDate).getTime() - new Date(b.payoutDate).getTime();
             } else {
@@ -59,7 +57,7 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         })
     }
     // Filters
-    payouts = payouts.filter((payout: Payout) => {
+    const filteredPayouts = PAYOUTS.filter((payout: Payout) => {
         const { payoutStatus, createFromDate, createToDate, netPayoutAmountFrom, netPayoutAmountTo, merchantId, iban, payoutId } = request;
         let includeItem = true;
         if (payoutStatus && payoutStatus.length) includeItem = includeItem && payoutStatus.includes(convertStatusCodeToValue(payout.payoutStatus));
@@ -75,15 +73,15 @@ export const generatePayoutsResponse = async (request: PayoutsRequest) => {
         return includeItem;
     })
 
-    const payoutsInThePage: Payout[] = paginateList(payouts, request.pageSize, request.pageNumber);
+    const payoutsInThePage: Payout[] = paginateList(filteredPayouts, request.pageSize, request.pageNumber);
 
     const response: PayoutsResponse = {
 
         metaData: {
             page: request.pageNumber,
             perPage: request.pageSize,
-            pageCount: Math.ceil(payouts.length / request.pageSize),
-            totalCount: payouts.length
+            pageCount: Math.ceil(filteredPayouts.length / request.pageSize),
+            totalCount: filteredPayouts.length
         },
         payouts: payoutsInThePage,
     }

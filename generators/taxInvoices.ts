@@ -6,6 +6,7 @@ import jsonfile from 'jsonfile';
 import { paginateList } from "./helpers";
 import { TaxInvoice, TaxInvoicesRequest, TaxInvoicesResponse } from "../interfaces/taxInvoice";
 import dayjs from "dayjs";
+import { TAX_INVOICES } from "./data";
 
 export const generateTaxInvoices = () => {
     const numberOfItems = 500;
@@ -38,9 +39,8 @@ export const generateTaxInvoices = () => {
 }
 
 export const getTaxInvoices = async (request: TaxInvoicesRequest): Promise<TaxInvoicesResponse> => {
-    let taxInvoicesData: TaxInvoice[] = await jsonfile.readFile('./data/tax-invoices.json');
 
-    taxInvoicesData = taxInvoicesData.filter((invoice: TaxInvoice) => {
+    const filteredTaxInvoices = TAX_INVOICES.filter((invoice: TaxInvoice) => {
         let includeItem = true;
         if (request.invoiceNo) includeItem = includeItem && invoice.invoiceNo.includes(request.invoiceNo || "");
         if (request.year) includeItem = includeItem && invoice.year === request.year;
@@ -53,9 +53,9 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest): Promise<TaxIn
         metadata: {
             page: request.pageNumber,
             perPage: request.pageSize,
-            pageCount: Math.round(taxInvoicesData.length / request.pageSize),
-            totalCount: taxInvoicesData.length
+            pageCount: Math.round(filteredTaxInvoices.length / request.pageSize),
+            totalCount: filteredTaxInvoices.length
         },
-        vat: paginateList(taxInvoicesData, request.pageSize, request.pageNumber)
+        vat: paginateList(filteredTaxInvoices, request.pageSize, request.pageNumber)
     };
 }

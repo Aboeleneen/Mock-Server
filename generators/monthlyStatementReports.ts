@@ -6,6 +6,7 @@ import jsonfile from 'jsonfile';
 import { paginateList } from "./helpers";
 import { MonthlyStatementReport, MonthlyStatementReportRequest, MonthlyStatementReportResponse } from "../interfaces/monthlyStatementReports";
 import dayjs from "dayjs";
+import { MONTHLY_STATEMENt_REPORTS } from "./data";
 
 export const generateMonthlyStatementReports = () => {
     const numberOfItems = 500;
@@ -36,9 +37,7 @@ export const generateMonthlyStatementReports = () => {
 }
 
 export const getMonthlyStatementReports = async (request: MonthlyStatementReportRequest): Promise<MonthlyStatementReportResponse> => {
-    let monthlyStatementReports: MonthlyStatementReport[] = await jsonfile.readFile('./data/monthly-statement-reports.json');
-
-    monthlyStatementReports = monthlyStatementReports.filter((report: MonthlyStatementReport) => {
+    const filteredMSR = MONTHLY_STATEMENt_REPORTS.filter((report: MonthlyStatementReport) => {
         let includeItem = true;
         if (request.year) includeItem = includeItem && report.year === request.year;
         if (request.month) includeItem = includeItem && report.month === request.month;
@@ -50,9 +49,9 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
         metadata: {
             page: request.pageNumber,
             perPage: request.pageSize,
-            pageCount: Math.round(monthlyStatementReports.length / request.pageSize),
-            totalCount: monthlyStatementReports.length
+            pageCount: Math.round(filteredMSR.length / request.pageSize),
+            totalCount: filteredMSR.length
         },
-        msr: paginateList(monthlyStatementReports, request.pageSize, request.pageNumber)
+        msr: paginateList(filteredMSR, request.pageSize, request.pageNumber)
     };
 }

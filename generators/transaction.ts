@@ -10,6 +10,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import { Transaction, TransactionRequest, TransactionResponse } from "../interfaces/transaction";
 import { Payout } from "../interfaces/payout";
+import { TRANSACTIONS } from "./data";
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
@@ -77,11 +78,9 @@ export const generateTransactions = async () => {
 }
 
 export const generateTransactionResponse = async (request: TransactionRequest) => {
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-
     // Sorting
     if (request.orderBy === "amount") {
-        transactions.sort((a: Transaction, b: Transaction) => {
+        TRANSACTIONS.sort((a: Transaction, b: Transaction) => {
             if (request.orderByDirection === 'Asc') {
                 return a.amount - b.amount;
             } else {
@@ -89,7 +88,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
             }
         })
     } else {
-        transactions.sort((a: Transaction, b: Transaction) => {
+        TRANSACTIONS.sort((a: Transaction, b: Transaction) => {
             if (request.orderByDirection === 'Asc') {
                 return new Date(a.localDate).getTime() - new Date(b.localDate).getTime();
             } else {
@@ -98,7 +97,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         })
     }
     // Filters
-    transactions = transactions.filter((transaction: Transaction) => {
+    const filteredTransactions = TRANSACTIONS.filter((transaction: Transaction) => {
         const { paymentStatus, transactionType, scheme, createFromDate, createToDate, amountFrom, amountTo, merchantId, isDcc, paymentMethod, payoutId, terminalId, referenceNumber } = request;
         let includeItem = true;
         if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
@@ -124,14 +123,14 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         return includeItem;
     })
 
-    const transactionsInThePage = paginateList(transactions, request.pageSize, request.pageNumber);
+    const transactionsInThePage = paginateList(filteredTransactions, request.pageSize, request.pageNumber);
 
     const response: TransactionResponse = {
         metadata: {
             page: request.pageNumber,
-            pageCount: Math.ceil(transactions.length / request.pageSize),
+            pageCount: Math.ceil(filteredTransactions.length / request.pageSize),
             perPage: request.pageSize,
-            totalCount: transactions.length
+            totalCount: filteredTransactions.length
         },
         transactions: transactionsInThePage,
     }
