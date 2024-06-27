@@ -19,7 +19,13 @@ export const DYNAMIC_CURRENCY_COVERSION = ["OriginalCurrency", "ForeignCurrency"
 export const PAYOUTS_STATUSES = ["Pending", "Processed", "Rejected"]
 
 export const STORE_IDS = [
-    "101000000021001", "101000000021002", "B10100000222", "B10100000218", "B10100000197"
+    "101000000021001",
+    "101000000021002", 
+    "B10100000222", 
+    "B10100000218", 
+    "B10100000197", 
+    "101000000021002", 
+    "101000000021001"
 ];
 
 export const TAX_AVAILABLE_YEARS = [2022, 2023];
