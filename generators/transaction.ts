@@ -102,11 +102,7 @@ export const generateTransactionResponse = async (request: TransactionRequest) =
         let includeItem = true;
         if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
         if (scheme && scheme.length) {
-            includeItem = includeItem && (
-                ((scheme.includes("VI") || scheme.includes("VL")) && transaction.cardProduct === "Visa") ||
-                ((scheme.includes("MI") || scheme.includes("ML")) && transaction.cardProduct === "Mastercard") ||
-                (scheme.includes("AX") && transaction.cardProduct === "AMEX")
-            );
+            includeItem = includeItem && scheme.includes(transaction.cardProduct);
         }
         if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
         if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
