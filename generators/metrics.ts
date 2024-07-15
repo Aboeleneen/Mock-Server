@@ -5,6 +5,7 @@ import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import { DayMetricsResponse, MetricsDto, MetricsRequest, MetricsResponse } from "../interfaces/metrics";
 import { Transaction } from "../interfaces/transaction";
 import { TRANSACTIONS } from "./data";
+import { faker } from '@faker-js/faker';
 
 dayjs.extend(customParseFormat)
 dayjs.extend(isSameOrBefore)
@@ -44,7 +45,7 @@ const applyFilters = (request: MetricsRequest, transactions: Transaction[]) => {
                 (scheme.includes("AX") && transaction.cardProduct === "AMEX")
             );
         } if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
-        if (merchantId && merchantId.length > 0) includeItem = includeItem && merchantId.includes(transaction.merchantId); //transaction.merchantId = faker.helpers.arrayElement(merchantId) 
+        if (merchantId && merchantId.length > 0) transaction.merchantId = faker.helpers.arrayElement(merchantId)  //includeItem = includeItem && merchantId.includes(transaction.merchantId); 
         if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '')
         return includeItem;
     })

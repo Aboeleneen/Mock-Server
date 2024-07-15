@@ -2,7 +2,6 @@ import { faker } from "@faker-js/faker";
 import _ from "lodash";
 import { STORE_IDS } from "../constants";
 const { writeFileSync } = require('fs');
-import jsonfile from 'jsonfile';
 import { paginateList } from "./helpers";
 import { MonthlyStatementReport, MonthlyStatementReportRequest, MonthlyStatementReportResponse } from "../interfaces/monthlyStatementReports";
 import dayjs from "dayjs";
@@ -41,7 +40,7 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
         let includeItem = true;
         if (request.year) includeItem = includeItem && report.year === request.year;
         if (request.month) includeItem = includeItem && report.month === request.month;
-        if (request.merchantId && request.merchantId.length) includeItem = includeItem && request.merchantId.includes(report.merchantId); //report.merchantId = faker.helpers.arrayElement(request.merchantId)
+        if (request.merchantId && request.merchantId.length) report.merchantId = faker.helpers.arrayElement(request.merchantId) // includeItem = includeItem && request.merchantId.includes(report.merchantId); 
         return includeItem;
     }
     )

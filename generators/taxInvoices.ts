@@ -45,7 +45,7 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest): Promise<TaxIn
         if (request.invoiceNo) includeItem = includeItem && invoice.invoiceNo.includes(request.invoiceNo || "");
         if (request.year) includeItem = includeItem && invoice.year === request.year;
         if (request.month) includeItem = includeItem && invoice.month === request.month;
-        if (request.merchantId && request.merchantId.length) includeItem = includeItem && request.merchantId.includes(invoice.merchantId); //invoice.merchantId = faker.helpers.arrayElement(request.merchantId)
+        if (request.merchantId && request.merchantId.length) invoice.merchantId = faker.helpers.arrayElement(request.merchantId) // includeItem = includeItem && request.merchantId.includes(invoice.merchantId); 
         return includeItem;
     }
     )
