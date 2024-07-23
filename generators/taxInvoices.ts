@@ -53,7 +53,7 @@ export const getTaxInvoices = async (request: TaxInvoicesRequest): Promise<TaxIn
         metadata: {
             page: request.pageNumber,
             perPage: request.pageSize,
-            pageCount: Math.round(filteredTaxInvoices.length / request.pageSize),
+            pageCount: Math.ceil(filteredTaxInvoices.length / request.pageSize),
             totalCount: filteredTaxInvoices.length
         },
         vat: paginateList(filteredTaxInvoices, request.pageSize, request.pageNumber)

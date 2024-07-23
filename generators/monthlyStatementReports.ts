@@ -48,7 +48,7 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
         metadata: {
             page: request.pageNumber,
             perPage: request.pageSize,
-            pageCount: Math.round(filteredMSR.length / request.pageSize),
+            pageCount: Math.ceil(filteredMSR.length / request.pageSize),
             totalCount: filteredMSR.length
         },
         msr: paginateList(filteredMSR, request.pageSize, request.pageNumber)
