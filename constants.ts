@@ -12,7 +12,7 @@ export const CURRENCIES = ["USD", "AED"]
 
 export const PATMENT_METHODS = ["Online", "Terminal"]
 
-export const SCHEME_TYPES = ["VI", "MI","ME", "UP", "AX", "JC", "DI", "RU"]
+export const SCHEME_TYPES = ["VI", "MI","ME", "UP", "AX", "JC", "DI", "RU", "TM", "TB"]
 
 export const DYNAMIC_CURRENCY_COVERSION = ["OriginalCurrency", "ForeignCurrency"]
 
