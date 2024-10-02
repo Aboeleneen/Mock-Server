@@ -9,7 +9,8 @@ import { generateTransactionResponse } from './generators/transaction';
 import { generatePayoutsResponse, generatePayoutsSummaryResponse } from './generators/payouts';
 import { PayoutsRequest, PayoutsSummaryRequest } from './interfaces/payout';
 import { TransactionRequest } from './interfaces/transaction';
-
+import { createNewTicket, getStoreTerminals, getTicketsList } from './generators/tickets'; // Assuming this is the correct import for getTicketsList
+import { CreateNewTicketRequest, TicketsQueryRequest } from './interfaces/tickets';
 
 const app: Application = express();
 app.use(express.json())
@@ -130,6 +131,39 @@ app.get('/payoutContent', (req, res) => {
 
     // Return the CMS payout response as JSON
     res.json(cmsPayoutResponse);
+});
+
+// Epos Api Requests Simulation
+app.post('/Auth/Login', async (req: Request, res: Response) => {
+    res.json({
+        output: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.adfasfdskdlfj.iMn27pi-"
+    });
+});
+
+app.post('/Maintenance/TicketStatus', async (req: Request, res: Response) => {
+    const ticketsResponse = getTicketsList(req.body as TicketsQueryRequest);
+    res.json(ticketsResponse);
+});
+
+app.get('/Maintenance/GetMerchantDetails', async (req: Request, res: Response) => {
+    const { identifierType, identifierValue  } = req.query;
+    // Simulate fetching merchant details based on identifierType and identifierValue
+    res.json({
+        "errorCode": "EIPAD1000",
+        "errorDescription": "Success",
+        "status": true,
+        "merchantDetails": getStoreTerminals(identifierValue as string)
+    });
+});
+
+app.post('/Maintenance/TicketCreation', async (req: Request, res: Response) => {
+    const ticketId = createNewTicket(req.body as CreateNewTicketRequest);
+    res.json({
+        "errorCode": "EIPAD1000",
+        "errorDescription": "Success(None)",
+        "ticketId": ticketId,
+        "status": true
+    });
 });
 
 app.listen(port, () => {

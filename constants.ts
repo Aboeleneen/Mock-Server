@@ -29,3 +29,5 @@ export const STORE_IDS = [
 ];
 
 export const TAX_AVAILABLE_YEARS = [2022, 2023];
+
+export const TICKET_STATUS = ["pending", "done", "cancelled"];
