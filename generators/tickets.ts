@@ -43,7 +43,7 @@ export const createNewTicket = (ticketRequest: CreateNewTicketRequest): string =
     // Write updated tickets back to the file
     writeFileSync("data/tickets.json", JSON.stringify(tickets), 'utf8');
 
-    return newTicket.terminal_id; // Return the ID of the newly created ticket
+    return newTicket.ticket_id; // Return the ID of the newly created ticket
 }
 
 // Retrieves a list of tickets based on query parameters
