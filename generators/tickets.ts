@@ -104,13 +104,13 @@ export const getStoreTerminals = (storeId: string): TerminalDetails[] => {
     // Check if no terminals were found
     if (foundTerminals.length === 0) {
         const newTerminal: TerminalDetails = {
-            terminalID: faker.string.uuid(),
+            terminalID: faker.string.alphanumeric(),
             storeID: storeId,
             installationDate: new Date().toISOString(), // Set current date
             storeName: "New Store", // Placeholder for store name
             terminalCity: "Unknown City", // Placeholder for city
             location: "Unknown Location", // Placeholder for location
-            terminalSerialNumber: null, // Set as null
+            terminalSerialNumber: faker.string.alphanumeric(), // Set as null
             terminalTypeModel: "PAX A920", // Default model
             terminalStatus: "INSTALLED", // Default status
             merchantName: "New Merchant", // Placeholder for merchant name
