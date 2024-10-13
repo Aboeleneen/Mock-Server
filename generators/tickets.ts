@@ -14,7 +14,7 @@ import dayjs from 'dayjs'; // Import dayjs
 export const createNewTicket = (ticketRequest: CreateNewTicketRequest): string => {
     const terminal = getTerminalById(ticketRequest.terminal);
     const newTicket: TicketDetails = {
-        ticket_id: faker.string.uuid(),
+        ticket_id: faker.string.alphanumeric(7),
         store_id: terminal?.storeID,
         terminal_id: ticketRequest.terminal,
         terminal_City: faker.location.city(),
@@ -107,7 +107,7 @@ export const getStoreTerminals = (storeId: string): TerminalDetails[] => {
     // Check if no terminals were found
     if (foundTerminals.length === 0) {
         const newTerminal: TerminalDetails = {
-            terminalID: faker.string.alphanumeric(),
+            terminalID: faker.string.alphanumeric(7),
             storeID: storeId,
             installationDate: new Date().toISOString(), // Set current date
             storeName: "New Store", // Placeholder for store name
