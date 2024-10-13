@@ -1,82 +1,36 @@
 import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import { PAYOUTS_STATUSES, STORE_IDS } from "../constants";
+import { STORE_IDS } from "../constants";
 import { readFile, writeFileSync } from "jsonfile";
 import { paginateList } from "./helpers";
-import { Transaction } from "./transaction";
+import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { Payout, PayoutsRequest, PayoutsResponse, PayoutsSummaryRequest } from "../interfaces/payout";
+import { Transaction } from "../interfaces/transaction";
+import { PAYOUTS } from "./data";
 
-export interface Payout {
-    referenceId: string;
-    IBAN: string;
-    payoutDate: Date;
-    status: string;
-    grossAmount: number;
-    netAmount: number;
-    netPayout: number;
-    feesDeducted: number;
-    numberOfTransactions: number;
-    currency: string;
-    grouped: boolean;
-    organizationId?: string;
-    refundAndChargeback: number;
-    settlementFees: number;
-}
-
-export interface PayoutsResponse {
-    pageNumber: number;
-    pageSize: number;
-    totalPages: number;
-    TotalPayouts: number;
-    netAmount: number;
-    currency: string;
-    organizationIds: string[];
-    payouts: Payout[];
-}
-
-
-export interface PayoutsFilters {
-    statuses?: string[];
-    refundStatus?: string[];
-    netAmountFrom?: number;
-    netAmountTo?: number;
-    from: Date;
-    to: Date;
-    storeIds: string[];
-}
-
-export interface PayoutsRequest {
-    pageNumber: number;
-    pageSize: number;
-    keyword: string;
-    sortOrder: "Asc" | "Desc";
-    sortBy: "PayoutDateTime" | "NetPayout";
-    searchIn: string;
-    filters: PayoutsFilters;
-}
-
-export interface PayoutsSummaryRequest {
-    storeIds: string[];
-}
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
 
 export const generatePayouts = () => {
     const numberOfItems = 1000;
     const payouts: Payout[] = [];
     for (let i = 0; i < numberOfItems; i++) {
+        const date = faker.date.between({  from: "2024-04-01", to: "2024-10-30" });
         payouts.push({
-            payoutDate: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
-            status: faker.helpers.arrayElement(PAYOUTS_STATUSES),
-            referenceId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
-            IBAN: faker.string.uuid(),
-            grossAmount: faker.number.int({ min: 50, max: 5000 }),
+            payoutDate: dayjs(date).format("YYYY-MM-DD"),
+            payoutStatus: faker.helpers.arrayElement([-2, -1, 0, 1, 2, 3, 4]),
+            payoutId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
+            merchantIban: faker.string.uuid(),
+            totalAmount: faker.number.int({ min: 50, max: 5000 }),
             netAmount: faker.number.int({ min: 50, max: 5000 }),
-            netPayout: faker.number.int({ min: 50, max: 5000 }),
-            feesDeducted: faker.number.int({ min: 10, max: 50 }),
-            currency: "AED",
-            numberOfTransactions: faker.number.int({ min: 10, max: 50 }),
-            grouped: true,
-            organizationId: faker.helpers.arrayElement(STORE_IDS),
-            refundAndChargeback: faker.number.int({ min: 30, max: 500 }),
-            settlementFees: faker.number.int({ min: 30, max: 500 })
+            totalFeeAmount: faker.number.int({ min: 10, max: 50 }),
+            transactionsNumber: faker.number.int({ min: 10, max: 50 }),
+            merchantId: faker.helpers.arrayElement(STORE_IDS),
+            payoutCurrency: "AED"
         })
     }
     writeFileSync("data/payouts.json", payouts, 'utf8');
@@ -84,89 +38,70 @@ export const generatePayouts = () => {
 }
 
 export const generatePayoutsResponse = async (request: PayoutsRequest) => {
-    let payouts = await readFile('./data/payouts.json');
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-
     // Sorting
-    if (request.sortBy === "NetPayout") {
-        payouts.sort((a: Payout, b: Payout) => {
-            if (request.sortOrder === 'Asc') {
-                return a.netPayout - b.netPayout;
+    if (request.orderBy === "payout amount") {
+        PAYOUTS.sort((a: Payout, b: Payout) => {
+            if (request.orderByDirection === 'Asc') {
+                return a.netAmount - b.netAmount;
             } else {
-                return b.netPayout - a.netPayout;
+                return b.netAmount - a.netAmount;
             }
         })
     } else {
-        payouts.sort((a: Payout, b: Payout) => {
-            if (request.sortOrder === 'Asc') {
+        PAYOUTS.sort((a: Payout, b: Payout) => {
+            if (request.orderByDirection === 'Asc') {
                 return new Date(a.payoutDate).getTime() - new Date(b.payoutDate).getTime();
             } else {
                 return new Date(b.payoutDate).getTime() - new Date(a.payoutDate).getTime();
             }
         })
     }
-
     // Filters
-    payouts = payouts.filter((payout: Payout) => {
-        if (!request.filters) return true;
-        const { statuses, from, to, netAmountFrom, netAmountTo, storeIds } = request.filters;
+    const filteredPayouts = PAYOUTS.filter((payout: Payout) => {
+        const { payoutStatus, createFromDate, createToDate, netPayoutAmountFrom, netPayoutAmountTo, merchantId, iban, payoutId } = request;
         let includeItem = true;
-        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(payout.status);
-        if (from) includeItem = includeItem && payout.payoutDate >= from;
-        if (to) includeItem = includeItem && payout.payoutDate <= to;
-        if (netAmountFrom) includeItem = includeItem && payout.netPayout >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && payout.netPayout <= netAmountTo;
-        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(payout.organizationId!);
+        if (payoutStatus && payoutStatus.length) includeItem = includeItem && payoutStatus.includes(convertStatusCodeToValue(payout.payoutStatus));
+        if (createFromDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(payout.payoutDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        if (netPayoutAmountFrom) includeItem = includeItem && payout.netAmount >= netPayoutAmountFrom;
+        if (netPayoutAmountTo) includeItem = includeItem && payout.netAmount <= netPayoutAmountTo;
+        if (merchantId && merchantId.length) payout.merchantId = faker.helpers.arrayElement(merchantId) // includeItem = includeItem && merchantId.includes(payout.merchantId!); 
 
-        if (request.keyword && request.searchIn === "IBAN") includeItem = includeItem && payout.IBAN.includes(request.keyword);
-        if (request.keyword && request.searchIn === "PayoutId") includeItem = includeItem && payout.referenceId.includes(request.keyword);
+        if (iban && iban.length) includeItem = includeItem && iban.includes(payout.merchantIban);
+        if (payoutId) includeItem = includeItem && payout.payoutId == payoutId;
 
         return includeItem;
     })
 
-    const payoutsInThePage: Payout[] = paginateList(payouts, request.pageSize, request.pageNumber);
-    const organizationIds: string[] = [];
-    let netAmount = 0;
-    payoutsInThePage.forEach(payout => {
-        organizationIds.push(payout.organizationId!);
-        netAmount += payout.netAmount;
-    });
-
-    const returnedPayouts = payoutsInThePage.map(payout => ({
-        ...payout,
-        numberOfTransactions: transactions.filter(transaction => transaction.payoutId === payout.referenceId).length
-    }))
-
-
+    const payoutsInThePage: Payout[] = paginateList(filteredPayouts, request.pageSize, request.pageNumber);
 
     const response: PayoutsResponse = {
-        pageNumber: request.pageNumber,
-        pageSize: request.pageSize,
-        totalPages: Math.ceil(payouts.length / request.pageSize),
-        currency: "AED",
-        payouts: returnedPayouts,
-        netAmount,
-        organizationIds,
-        TotalPayouts: payouts.length,
+
+        metaData: {
+            page: request.pageNumber,
+            perPage: request.pageSize,
+            pageCount: Math.ceil(filteredPayouts.length / request.pageSize),
+            totalCount: filteredPayouts.length
+        },
+        payouts: payoutsInThePage,
     }
 
     return response;
 }
 
-
 export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequest) => {
     const { storeIds } = request;
     let payouts = await readFile('./data/payouts.json');
     if (storeIds && storeIds.length) {
-        payouts = payouts.filter((payout: Payout) => storeIds.includes(payout.organizationId!))
+        payouts = payouts.filter((payout: Payout) => storeIds.includes(payout.merchantId!))
     }
 
     let totalBalance = 0;
     let unSettledAmount = 0;
     let readyToPayAmount = 0;
     payouts.forEach((payout: Payout) => {
-        totalBalance += payout.netPayout;
-        unSettledAmount += payout.grossAmount;
+        totalBalance += payout.netAmount;
+        unSettledAmount += payout.totalAmount;
         readyToPayAmount += payout.netAmount;
     })
 
@@ -178,4 +113,25 @@ export const generatePayoutsSummaryResponse = async (request: PayoutsSummaryRequ
         currency: "AED"
     }
 
+}
+
+function convertStatusCodeToValue(statusCode: number) {
+    switch (statusCode) {
+        case -2:
+            return "Fraudulent";
+        case -1:
+            return "Initiated";
+        case 0:
+            return "Pending";
+        case 1:
+            return "InProgress";
+        case 2:
+            return "Approved";
+        case 3:
+            return "Rejected";
+        case 4:
+            return "Completed";
+        default:
+            return "Unknown";
+    }
 }
