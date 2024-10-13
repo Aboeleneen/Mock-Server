@@ -85,7 +85,10 @@ export const getTicketsList = (request: TicketsQueryRequest) => {
         "Description": "None",
         "Merchant Name": null,
         "Total Of Tickets": totalOfTickets,
-        "Ticket_details": paginatedTickets
+        "Ticket_details": paginatedTickets.map(ticket => ({
+            ...ticket,
+            open_date: new Date(ticket.open_date).toLocaleDateString('pt-BR')
+        }))
     };
 }
 
