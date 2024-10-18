@@ -23,5 +23,5 @@ export const TAX_INVOICES: TaxInvoice[] = readFileSync('./data/tax-invoices.json
 console.log(`Loading ${TAX_INVOICES.length} tax invoices`);
 
 // Create tickets.json and terminals.json if they don't exist
-createFileIfNotExists('./data/tickets.json', []);
-createFileIfNotExists('./data/terminals.json', []);
+// createFileIfNotExists('./data/tickets.json', []);
+// createFileIfNotExists('./data/terminals.json', []);

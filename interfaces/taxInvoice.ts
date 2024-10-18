@@ -6,8 +6,8 @@ export interface TaxInvoicesRequest {
     orderBy: string;
     merchantId: string[];
     invoiceNo: string;
-    year: number;
-    month: number | null;
+    year: string;
+    month: string | null;
 }
 
 export interface TaxInvoice {
