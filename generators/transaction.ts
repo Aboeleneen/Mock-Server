@@ -1,216 +1,134 @@
 import { faker } from "@faker-js/faker";
 import _ from "lodash";
-import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, PAYMENT_TYPES, SCHEME_TYPES, STORE_IDS, TRANSACTION_STATUSES } from "../constants";
+import { DYNAMIC_CURRENCY_COVERSION, PATMENT_METHODS, SCHEME_TYPES, STORE_IDS, TRANSACTION_TYPES } from "../constants";
 import { readFile } from "jsonfile";
 import { paginateList } from "./helpers";
 import { writeFileSync } from 'fs';
-import { Payout } from "./payouts";
+import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
+import { Transaction, TransactionRequest, TransactionResponse } from "../interfaces/transaction";
+import { Payout } from "../interfaces/payout";
+import { TRANSACTIONS } from "./data";
 
-export interface Transaction {
-    transactionId: string;
-    orderId: string;
-    transactionDateTime: Date;
-    transactionStatus: string;
-    tid: string;
-    paymentType: string;
-    grossAmount: number;
-    netAmount: number;
-    financedAmount?: number;
-    cashPayment?: number;
-    originalAmount?: number;
-    originalCurrency?: string;
-    currency: string;
-    paymentMethod: string;
-    maskedCardNumber: string;
-    cardType?: string;
-    merchantReferenceId: string;
-    payoutId: string;
-    countryCode: string;
-    phoneNumber: string;
-    batchNumber: string;
-    totalRefundAmount?: number;
-    refundStatus?: string;
-    organizationId: string;
-    payByLinkId?: string;
-    payByLinkType?: string;
-    dcc?: string;
-    exchangeRate?: number;
-}
-export interface TransactionResponse {
-    pageNumber: number;
-    pageSize: number;
-    totalPages: number;
-    totalSales: number;
-    totalSearchMatches: number;
-    totalAmount: number;
-    netAmount: number;
-    currency: string;
-    totalProducts: number;
-    organizationIds: string[];
-    transactions: Transaction[];
-}
-
-export interface TransactionFilters {
-    // payoutId?: string;
-    paymentMethods?: string[];
-    paymentTypes?: string[];
-    statuses?: string[];
-    refundStatus?: string[];
-    netAmountFrom?: number;
-    netAmountTo?: number;
-    from: Date;
-    to: Date;
-    storeIds: string[];
-    businessId?: string;
-    schemes?: string[];
-    dcc?: string[];
-}
-
-export interface TransactionRequest {
-    pageNumber: number;
-    pageSize: number;
-    keyword: string;
-    searchIn: string;
-    sortOrder: "Asc" | "Desc";
-    sortBy: "TransactionDateTime" | "Amount";
-    showTestTranasctions: boolean;
-    filters: TransactionFilters;
-}
+dayjs.extend(customParseFormat)
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
 
 export const generateTransactions = async () => {
-    const numberOfItems = 1000;
+    const numberOfItems = 10000;
     const transactions: Transaction[] = [];
     const payouts: Payout[] = await readFile('./data/payouts.json');
-    const payoutIds = payouts.map(payout => payout.referenceId);
+    const payoutIds = payouts.map(payout => payout.payoutId);
     let terminalIds = [];
     for (let index = 0; index < 50; index++) {
         terminalIds.push(faker.string.uuid());
     }
     const USD_TO_AED_RATE = 3.67;
+    const ammountRange = { min: 1, max: 100000 };
     for (let i = 0; i < numberOfItems; i++) {
-        let transactionStatus = faker.helpers.arrayElement(TRANSACTION_STATUSES);
-        let amount = faker.number.float({ min: 100, max: 100000 })
+        let transactionStatus = faker.helpers.arrayElement([0, 1, 2, 3]);
+        let amount = faker.number.int(ammountRange)
         let dcc = faker.helpers.arrayElement(DYNAMIC_CURRENCY_COVERSION)
+        const date = faker.date.between({ from: "2024-04-01", to: "2024-10-30" });
         transactions.push({
-            transactionId: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
-            orderId: faker.string.uuid(),
-            transactionDateTime: faker.date.between({ from: "2023-11-01", to: "2023-12-30" }),
-            transactionStatus,
-            tid: faker.helpers.arrayElement(terminalIds),
-            paymentType: faker.helpers.arrayElement(PAYMENT_TYPES),
-            grossAmount: amount,
-            netAmount: faker.number.float({ min: 100, max: 100000 }),
-            financedAmount: faker.number.int({ min: 50, max: 1000 }),
-            cashPayment: faker.number.int({ min: 50, max: 1000 }),
-            originalAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : undefined,
-            originalCurrency: dcc === "ForeignCurrency" ? "USD" : undefined,
-            currency: "AED",
+            referenceNumber: faker.string.nanoid(faker.helpers.arrayElement([6, 8, 10, 12, 14])),
+            localDate: dayjs(date).format("YYYY-MM-DD"),
+            localTime: Number(dayjs(date).format("HHmmss")),
+            paymentStatus: transactionStatus,
+            terminalId: faker.helpers.arrayElement(terminalIds),
+            transactionType: faker.helpers.arrayElement(TRANSACTION_TYPES),
+            amount: amount,
+            netAmount: faker.number.int(ammountRange),
+            commissionAmount: faker.number.int(ammountRange),
+            settlementAmount: dcc === "ForeignCurrency" ? (amount / 3.67) : 784,
+            settlementCurrency: dcc === "ForeignCurrency" ? 840 : 784,
+            transactionCurrency: 784,
             paymentMethod: faker.helpers.arrayElement(PATMENT_METHODS),
-            maskedCardNumber: faker.finance.creditCardNumber(),
-            cardType: faker.helpers.arrayElement(SCHEME_TYPES),
-            merchantReferenceId: faker.string.uuid(),
+            cardProduct: faker.helpers.arrayElement(SCHEME_TYPES),
             payoutId: faker.helpers.arrayElement(payoutIds),
-            countryCode: faker.location.countryCode("numeric"),
-            phoneNumber: faker.phone.number(),
-            batchNumber: faker.finance.accountNumber(),
-            totalRefundAmount: getRefundAmount(transactionStatus, amount),
-            refundStatus: faker.helpers.arrayElement(TRANSACTION_STATUSES),
-            organizationId: faker.helpers.arrayElement(STORE_IDS),
-            payByLinkId: faker.string.uuid(),
-            dcc,
-            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : undefined
+            merchantId: faker.helpers.arrayElement(STORE_IDS),
+            exchangeRate: dcc === "ForeignCurrency" ? USD_TO_AED_RATE : 1,
+            GrossAmount: faker.commerce.price(),
+            LastUpdatedDate: faker.date.past(),
+            CustomerEmail: faker.internet.email(),
+            PhoneNumber: faker.phone.number(),
+            OrderId: faker.string.uuid(),
+            VAT: parseFloat(faker.finance.amount(0, 20)),
+            CashbackAmount: parseFloat(faker.finance.amount(0, 100)),
+            PaymentLinkNumber: faker.string.uuid(),
+            CardHolderName: faker.person.fullName(),
+            MaskedCardNumber: faker.finance.creditCardNumber(),
+            CardExpiryDate: faker.date.future(),
+            TerminalName: faker.company.name(),
+            TerminalLocation: faker.location.city(),
+            PayoutStatus: faker.helpers.arrayElement(['Pending', 'Completed']),
+            PayoutSettlementAmount: parseFloat(faker.finance.amount(0, 1000)),
+            PayoutPaymentDate: faker.date.future(),
+            InstallmentBank: faker.finance.accountName(),
+            InstallmentType: faker.helpers.arrayElement(['Personal Loan', 'Credit Card']),
+            Tenor: faker.number.int({ min: 6, max: 36 }).toString(),
+            InstallmentDiscountRate: parseFloat(faker.finance.amount(0, 10)),
+            authorizationCode: faker.string.sample()
         })
     }
     writeFileSync("data/transactions.json", JSON.stringify(transactions), 'utf8');
     return transactions;
 }
 
-const getRefundAmount = (refundStatus: string, originalAmount: number) => {
-    switch (refundStatus) {
-        case "PartialRefundDone":
-        case "PartialRefundInitiated":
-            return faker.number.float({ min: 100, max: originalAmount })
-        case "ExcessiveRefundDone":
-        case "ExcessiveRefundInitiated":
-            return faker.number.float({ min: 100, max: originalAmount - 100 })
-            break;
-        case "FullRefundDone":
-        case "FullRefundInitiated":
-            return originalAmount;
-        default:
-            break;
-    }
-    return 0;
-}
-
 export const generateTransactionResponse = async (request: TransactionRequest) => {
-    let transactions: Transaction[] = await readFile('./data/transactions.json');
-
-
     // Sorting
-    if (request.sortBy === "Amount") {
-        transactions.sort((a: Transaction, b: Transaction) => {
-            if (request.sortOrder === 'Asc') {
-                return a.grossAmount - b.grossAmount;
+    if (request.orderBy === "amount") {
+        TRANSACTIONS.sort((a: Transaction, b: Transaction) => {
+            if (request.orderByDirection === 'Asc') {
+                return a.amount - b.amount;
             } else {
-                return b.grossAmount - a.grossAmount;
+                return b.amount - a.amount;
             }
         })
     } else {
-        transactions.sort((a: Transaction, b: Transaction) => {
-            if (request.sortOrder === 'Asc') {
-                return new Date(a.transactionDateTime).getTime() - new Date(b.transactionDateTime).getTime();
+        TRANSACTIONS.sort((a: Transaction, b: Transaction) => {
+            if (request.orderByDirection === 'Asc') {
+                return new Date(a.localDate).getTime() - new Date(b.localDate).getTime();
             } else {
-                return new Date(b.transactionDateTime).getTime() - new Date(a.transactionDateTime).getTime();
+                return new Date(b.localDate).getTime() - new Date(a.localDate).getTime();
             }
         })
     }
     // Filters
-    transactions = transactions.filter((transaction: Transaction) => {
-        if (!request.filters) return true;
-        const { statuses, schemes, from, to, netAmountFrom, netAmountTo, storeIds, dcc, paymentMethods } = request.filters;
+    const filteredTransactions = TRANSACTIONS.filter((transaction: Transaction) => {
+        const { paymentStatus, transactionType, scheme, createFromDate, createToDate, amountFrom, amountTo, merchantId, isDcc, paymentMethod, payoutId, terminalId, referenceNumber } = request;
         let includeItem = true;
-        if (statuses && statuses.length) includeItem = includeItem && statuses.includes(transaction.transactionStatus);
-        if (schemes && schemes.length) includeItem = includeItem && schemes.includes(transaction.cardType || '');
-        if (from) includeItem = includeItem && transaction.transactionDateTime >= from;
-        if (to) includeItem = includeItem && transaction.transactionDateTime <= to;
-        if (netAmountFrom) includeItem = includeItem && transaction.grossAmount >= netAmountFrom;
-        if (netAmountTo) includeItem = includeItem && transaction.grossAmount <= netAmountTo;
-        if (storeIds && storeIds.length) includeItem = includeItem && storeIds.includes(transaction.organizationId);
-        if (dcc && dcc.length) includeItem = includeItem && dcc.includes(transaction.dcc || "");
-        if (paymentMethods && paymentMethods.length) includeItem = includeItem && paymentMethods.includes(transaction.paymentMethod);
-
-        if (request.keyword && request.searchIn === "PayoutId") includeItem = includeItem && transaction.payoutId.includes(request.keyword);
-        if (request.keyword && request.searchIn === "TerminalId") includeItem = includeItem && transaction.tid.includes(request.keyword);
-        if (request.keyword && request.searchIn === "TransactionId") includeItem = includeItem && transaction.transactionId.includes(request.keyword);
+        if (paymentStatus && paymentStatus.length) includeItem = includeItem && paymentStatus.includes(transaction.paymentStatus);
+        if (scheme && scheme.length) {
+            includeItem = includeItem && scheme.includes(transaction.cardProduct);
+        }
+        if (createFromDate && createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrAfter(dayjs(createFromDate, "DD/MM/YYYY"));
+        if (createToDate) includeItem = includeItem && dayjs(transaction.localDate, "YYYY-MM-DD").isSameOrBefore(dayjs(createToDate, "DD/MM/YYYY"));
+        if (amountFrom) includeItem = includeItem && transaction.amount >= amountFrom;
+        if (amountTo) includeItem = includeItem && transaction.amount <= amountTo;
+        if (merchantId && merchantId.length)  transaction.merchantId = faker.helpers.arrayElement(merchantId) // includeItem = includeItem && merchantId.includes(transaction.merchantId); 
+        if (isDcc) includeItem = includeItem && ((isDcc == "AED" && transaction.settlementCurrency == transaction.transactionCurrency) || (isDcc == "Others" && transaction.settlementCurrency != transaction.transactionCurrency));
+        if (paymentMethod) includeItem = includeItem && paymentMethod == transaction.paymentMethod;
+        if (transactionType && transactionType.length) includeItem = includeItem && transactionType.includes(transaction.transactionType || '');
+        if (payoutId) includeItem = includeItem && transaction.payoutId == payoutId;
+        if (terminalId && terminalId.length) includeItem = includeItem && terminalId.includes(transaction.terminalId);
+        if (referenceNumber) includeItem = includeItem && transaction.referenceNumber == referenceNumber;
 
         return includeItem;
     })
 
-    const transactionsInThePage = paginateList(transactions, request.pageSize, request.pageNumber);
-    const organizationIds: string[] = [];
-    let netAmount = 0;
-    let totalSales = 0;
-    let totalAmount = 0;
-    transactionsInThePage.forEach(transaction => {
-        organizationIds.push(transaction.organizationId!);
-        // netAmount += transaction.netAmount;
-        // totalSales += transaction.grossAmount;
-        // totalAmount += transaction.grossAmount;
-    });
+    const transactionsInThePage = paginateList(filteredTransactions, request.pageSize, request.pageNumber);
 
     const response: TransactionResponse = {
-        pageNumber: request.pageNumber,
-        pageSize: request.pageSize,
-        totalPages: Math.ceil(transactions.length / request.pageSize),
-        currency: "AED",
+        metadata: {
+            page: request.pageNumber,
+            pageCount: Math.ceil(filteredTransactions.length / request.pageSize),
+            perPage: request.pageSize,
+            totalCount: filteredTransactions.length
+        },
         transactions: transactionsInThePage,
-        netAmount,
-        organizationIds,
-        totalAmount,
-        totalSales,
-        totalProducts: transactions.length,
-        totalSearchMatches: transactions.length
     }
 
     return response;

@@ -4,47 +4,9 @@ import { STORE_IDS } from "../constants";
 const { writeFileSync } = require('fs');
 import jsonfile from 'jsonfile';
 import { paginateList } from "./helpers";
-
-export interface TaxInvoice {
-    invoiceNumber: string;
-    month: number;
-    year: number;
-
-    totalValueOfTransactions: number;
-    totalNumberOfTransactions: number;
-
-    totalAmount: number;
-    totalVat: number;
-    deducationsAmount: number;
-    deductionsVat: number;
-    commissionAmout: number;
-    commissionVat: number;
-    refundAmount: number;
-    refundVat: number;
-    settlementFees: number;
-    currency: string
-    invoiceDate: Date;
-    storeId: string;
-}
-
-export interface TaxInvoicesResponse {
-    pageNumber: number;
-    pageSize: number;
-    totalPages: number;
-    totalInvoices: number;
-    vatList: TaxInvoice[];
-}
-
-export interface TaxInvoicesRequest {
-    pageNumber: number;
-    pageSize: number;
-    sortOrder: "Desc" | "Asc";
-    sortBy: "DateTime" | "CommissionVat";
-    storeIds: string[];
-    invoiceNumber: string;
-    taxYear: number;
-    taxMonth: number;
-}
+import { TaxInvoice, TaxInvoicesRequest, TaxInvoicesResponse } from "../interfaces/taxInvoice";
+import dayjs from "dayjs";
+import { TAX_INVOICES } from "./data";
 
 export const generateTaxInvoices = () => {
     const numberOfItems = 500;
@@ -53,24 +15,22 @@ export const generateTaxInvoices = () => {
         let month = faker.number.int({ min: 1, max: 12 });
         let year = faker.number.int({ min: 2023, max: 2024 });
         taxInvoices.push({
-            storeId: STORE_IDS[faker.number.int({ min: 0, max: STORE_IDS.length - 1 })],
-            invoiceNumber: faker.string.uuid(),
-            month,
+            merchantId: STORE_IDS[faker.number.int({ min: 0, max: STORE_IDS.length - 1 })],
+            invoiceNo: faker.string.uuid(),
+            date: dayjs(`${year}-${month}-4`).format("MMYYYY"),
             year,
-            totalValueOfTransactions: faker.number.float({ min: 10, max: 300 }),
-            totalNumberOfTransactions: faker.number.int({ min: 10, max: 300 }),
-            totalAmount: faker.number.float({ min: 1000, max: 10000 }),
+            month,
+            totalAmountInclusiveVat: faker.number.float({ min: 1000, max: 10000 }),
             totalVat: faker.number.float({ min: 10, max: 300 }),
-            deducationsAmount: faker.number.float({ min: 100, max: 1000 }),
+            deductionsAmount: faker.number.float({ min: 100, max: 1000 }),
             deductionsVat: faker.number.float({ min: 10, max: 300 }),
-            commissionAmout: faker.number.float({ min: 100, max: 10000 }),
-            commissionVat: faker.number.float({ min: 10, max: 300 }),
-            refundAmount: faker.number.float({ min: 100, max: 1000 }),
-            refundVat: faker.number.float({ min: 10, max: 300 }),
+            commissionAmount: faker.number.float({ min: 100, max: 10000 }),
+            commissionVatInclusive: faker.number.float({ min: 10, max: 300 }),
+            refundCommissionAmount: faker.number.float({ min: 100, max: 1000 }),
+            refundCommissionVat: faker.number.float({ min: 10, max: 300 }),
             settlementFees: faker.number.float({ min: 100, max: 1000 }),
-            currency: "AED",
-
-            invoiceDate: new Date(`${year}-${month}-${faker.number.int({ min: 2, max: 30 })}`)
+            currency: 734,
+            creationDate: dayjs(`${year}-${month}-4`).format("YYYY-MM-DD")
         })
     }
     writeFileSync("data/tax-invoices.json", JSON.stringify(taxInvoices), 'utf8');
@@ -78,24 +38,24 @@ export const generateTaxInvoices = () => {
     return taxInvoices;
 }
 
-export const getTaxInvoices = async (request: TaxInvoicesRequest) => {
-    let taxInvoicesData: TaxInvoice[] = await jsonfile.readFile('./data/tax-invoices.json');
-    taxInvoicesData.sort((a: TaxInvoice, b: TaxInvoice) => {
-        if (request.sortOrder === 'Asc') {
-            return new Date(a.invoiceDate).getTime() - new Date(b.invoiceDate).getTime();
-        } else {
-            return new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime();
-        }
-    })
+export const getTaxInvoices = async (request: TaxInvoicesRequest): Promise<TaxInvoicesResponse> => {
 
-    taxInvoicesData = taxInvoicesData.filter((invoice: TaxInvoice) => {
+    const filteredTaxInvoices = TAX_INVOICES.filter((invoice: TaxInvoice) => {
         let includeItem = true;
-        if (request.invoiceNumber) includeItem = includeItem && invoice.invoiceNumber.includes(request.invoiceNumber || "");
-        if (request.taxYear) includeItem = includeItem && new Date(invoice.invoiceDate).getFullYear() === request.taxYear;
-        if (request.taxMonth) includeItem = includeItem && (new Date(invoice.invoiceDate).getMonth() + 1) === request.taxMonth;
-        if (request.storeIds && request.storeIds.length) includeItem = includeItem && request.storeIds.includes(invoice.storeId);
+        if (request.invoiceNo) includeItem = includeItem && invoice.invoiceNo.includes(request.invoiceNo || "");
+        if (request.year) includeItem = includeItem && invoice.year === Number(request.year);
+        if (request.month) includeItem = includeItem && invoice.month === Number(request.month);
+        if (request.merchantId && request.merchantId.length) includeItem = includeItem && request.merchantId.includes(invoice.merchantId);  // invoice.merchantId = faker.helpers.arrayElement(request.merchantId) // 
         return includeItem;
     }
     )
-    return { totalPages: Math.round(taxInvoicesData.length / request.pageSize), totalInvoices: taxInvoicesData.length, taxInvoices: paginateList(taxInvoicesData, request.pageSize, request.pageNumber) };
+    return {
+        metadata: {
+            page: request.pageNumber,
+            perPage: request.pageSize,
+            pageCount: Math.ceil(filteredTaxInvoices.length / request.pageSize),
+            totalCount: filteredTaxInvoices.length
+        },
+        vat: paginateList(filteredTaxInvoices, request.pageSize, request.pageNumber)
+    };
 }

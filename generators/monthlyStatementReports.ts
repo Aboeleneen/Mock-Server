@@ -2,52 +2,32 @@ import { faker } from "@faker-js/faker";
 import _ from "lodash";
 import { STORE_IDS } from "../constants";
 const { writeFileSync } = require('fs');
-import jsonfile from 'jsonfile';
 import { paginateList } from "./helpers";
-
-export interface MonthlyStatementReport {
-    msrNo: string;
-    month: number;
-    year: number;
-    currency: string;
-    createDate: Date;
-    transactionsAmount: number;
-    transcationsNumber: number;
-    payoutsNumber: number;
-    storeId: string;
-}
-
-export interface MonthlyStatementReportResponse {
-    totalPages: number;
-    totalMSRs: number;
-    monthlyStatementReports: MonthlyStatementReport[];
-}
-
-export interface MonthlyStatementReportRequest {
-    pageNumber: number;
-    pageSize: number;
-    storeIds: string[];
-    year: number;
-    month: number;
-    sortOrder: "Asc" | "Desc"
-}
+import { MonthlyStatementReport, MonthlyStatementReportRequest, MonthlyStatementReportResponse } from "../interfaces/monthlyStatementReports";
+import dayjs from "dayjs";
+import { MONTHLY_STATEMENt_REPORTS } from "./data";
 
 export const generateMonthlyStatementReports = () => {
     const numberOfItems = 500;
     const monthlyStatementReports: MonthlyStatementReport[] = [];
     for (let i = 0; i < numberOfItems; i++) {
         let month = faker.number.int({ min: 1, max: 12 });
-        let year = faker.number.int({ min: 2022, max: 2023 });
+        let year = faker.number.int({ min: 2023, max: 2024 });
         monthlyStatementReports.push({
-            storeId: faker.helpers.arrayElement(STORE_IDS),
+            merchantId: faker.helpers.arrayElement(STORE_IDS),
+            reportingMonthYear: dayjs(`${year}-${month}-4`).format("MMYYYY"),
             month,
             year,
-            transactionsAmount: faker.number.int({ min: 100, max: 30000 }),
-            transcationsNumber: faker.number.int({ min: 10, max: 3000 }),
-            currency: "AED",
-            createDate: new Date(`${year}-${month}-${faker.number.int({ min: 2, max: 30 })}`),
+            msrDetails: [{
+                totalTransactionsAmount: faker.number.int({ min: 100, max: 30000 }),
+                currency: 734,
+                deductionsNumber: faker.number.int({ min: 10, max: 100 }),
+                transactionsNumber: faker.number.int({ min: 10, max: 3000 }),
+                payoutsNumber: faker.number.int({ min: 10, max: 300 }),
+                totalPayoutsAmount: faker.number.int({ min: 100, max: 30000 })
+            }],
+            creationDate: dayjs(`${year}-${month}-4`).format("YYYY-MM-DD"),
             msrNo: faker.string.uuid(),
-            payoutsNumber: faker.number.int({ min: 100, max: 30000 }),
         })
     }
     writeFileSync("data/monthly-statement-reports.json", JSON.stringify(monthlyStatementReports), 'utf8');
@@ -55,23 +35,22 @@ export const generateMonthlyStatementReports = () => {
     return monthlyStatementReports;
 }
 
-export const getMonthlyStatementReports = async (request: MonthlyStatementReportRequest) => {
-    let monthlyStatementReports: MonthlyStatementReport[] = await jsonfile.readFile('./data/monthly-statement-reports.json');
-    monthlyStatementReports.sort((a: MonthlyStatementReport, b: MonthlyStatementReport) => {
-        if (request.sortOrder === 'Asc') {
-            return new Date(a.createDate).getTime() - new Date(b.createDate).getTime();
-        } else {
-            return new Date(b.createDate).getTime() - new Date(a.createDate).getTime();
-        }
-    })
-
-    monthlyStatementReports = monthlyStatementReports.filter((report: MonthlyStatementReport) => {
+export const getMonthlyStatementReports = async (request: MonthlyStatementReportRequest): Promise<MonthlyStatementReportResponse> => {
+    const filteredMSR = MONTHLY_STATEMENt_REPORTS.filter((report: MonthlyStatementReport) => {
         let includeItem = true;
-        if (request.year) includeItem = includeItem && new Date(report.createDate).getFullYear() === request.year;
-        if (request.month) includeItem = includeItem && (new Date(report.createDate).getMonth() + 1) === request.month;
-        if (request.storeIds && request.storeIds.length) includeItem = includeItem && request.storeIds.includes(report.storeId);
+        if (request.year) includeItem = includeItem && report.year === request.year;
+        if (request.month) includeItem = includeItem && report.month === request.month;
+        if (request.merchantId && request.merchantId.length) report.merchantId = faker.helpers.arrayElement(request.merchantId) // includeItem = includeItem && request.merchantId.includes(report.merchantId); 
         return includeItem;
     }
     )
-    return { totalPages: Math.round(monthlyStatementReports.length / request.pageSize), totalMSRs: monthlyStatementReports.length, monthlyStatementReports: paginateList(monthlyStatementReports, request.pageSize, request.pageNumber) };
+    return {
+        metadata: {
+            page: request.pageNumber,
+            perPage: request.pageSize,
+            pageCount: Math.ceil(filteredMSR.length / request.pageSize),
+            totalCount: filteredMSR.length
+        },
+        msr: paginateList(filteredMSR, request.pageSize, request.pageNumber)
+    };
 }
