@@ -39,8 +39,10 @@ export const getMonthlyStatementReports = async (request: MonthlyStatementReport
     const filteredMSR = MONTHLY_STATEMENt_REPORTS.filter((report: MonthlyStatementReport) => {
         let includeItem = true;
         if (request.year) includeItem = includeItem && report.year === request.year;
-        if (request.month) includeItem = includeItem && report.month === request.month;
-        if (request.merchantId && request.merchantId.length) report.merchantId = faker.helpers.arrayElement(request.merchantId) // includeItem = includeItem && request.merchantId.includes(report.merchantId); 
+        if (request.month) includeItem = includeItem && report.month === Number(request.month);
+        if (request.merchantId && request.merchantId.length) 
+            report.merchantId = faker.helpers.arrayElement(request.merchantId) 
+            // includeItem = includeItem && request.merchantId.includes(report.merchantId); 
         return includeItem;
     }
     )
