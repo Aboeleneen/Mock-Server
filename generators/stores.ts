@@ -8,9 +8,4 @@ export interface StoresResponse {
     stores: Store[];
 }
 
-export const generateStoresResponse = async (): Promise<StoresResponse> => {
-
-    return {
-        stores: STORE_IDS.map((storeId, index) => ({ businessId: storeId, legalName: `Store ${index + 1}` }))
-    };
-};
+export const generateStoresResponse = async (): Promise<Store[]> => STORE_IDS.map((storeId, index) => ({ businessId: storeId, legalName: `Store ${index + 1}` }))
